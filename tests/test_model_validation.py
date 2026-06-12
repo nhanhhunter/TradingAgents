@@ -53,3 +53,8 @@ class ModelValidationTests(unittest.TestCase):
                     client.get_llm()
 
                 self.assertEqual(caught, [])
+
+    def test_new_openai_compatible_provider_defaults_are_valid(self):
+        self.assertTrue(validate_model("mimo", "mimo-v2.5"))
+        self.assertTrue(validate_model("mimo", "mimo-v2.5-pro"))
+        self.assertTrue(validate_model("9router", "tier2"))

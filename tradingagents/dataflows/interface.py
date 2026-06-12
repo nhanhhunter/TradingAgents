@@ -11,6 +11,16 @@ from .y_finance import (
     get_insider_transactions as get_yfinance_insider_transactions,
 )
 from .yfinance_news import get_news_yfinance, get_global_news_yfinance
+from .vietnam_news import get_news_vietnam, get_global_news_vietnam
+from .vietnam_symbols import is_vietnam_symbol
+from .vnstock_adapter import (
+    get_vnstock_data_online,
+    get_stock_stats_indicators_window as get_vnstock_indicators,
+    get_fundamentals as get_vnstock_fundamentals,
+    get_balance_sheet as get_vnstock_balance_sheet,
+    get_cashflow as get_vnstock_cashflow,
+    get_income_statement as get_vnstock_income_statement,
+)
 from .alpha_vantage import (
     get_stock as get_alpha_vantage_stock,
     get_indicator as get_alpha_vantage_indicator,
@@ -63,6 +73,8 @@ TOOLS_CATEGORIES = {
 
 VENDOR_LIST = [
     "yfinance",
+    "vnstock",
+    "vietnam_news",
     "alpha_vantage",
 ]
 
@@ -70,37 +82,45 @@ VENDOR_LIST = [
 VENDOR_METHODS = {
     # core_stock_apis
     "get_stock_data": {
+        "vnstock": get_vnstock_data_online,
         "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
     },
     # technical_indicators
     "get_indicators": {
+        "vnstock": get_vnstock_indicators,
         "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
     },
     # fundamental_data
     "get_fundamentals": {
+        "vnstock": get_vnstock_fundamentals,
         "alpha_vantage": get_alpha_vantage_fundamentals,
         "yfinance": get_yfinance_fundamentals,
     },
     "get_balance_sheet": {
+        "vnstock": get_vnstock_balance_sheet,
         "alpha_vantage": get_alpha_vantage_balance_sheet,
         "yfinance": get_yfinance_balance_sheet,
     },
     "get_cashflow": {
+        "vnstock": get_vnstock_cashflow,
         "alpha_vantage": get_alpha_vantage_cashflow,
         "yfinance": get_yfinance_cashflow,
     },
     "get_income_statement": {
+        "vnstock": get_vnstock_income_statement,
         "alpha_vantage": get_alpha_vantage_income_statement,
         "yfinance": get_yfinance_income_statement,
     },
     # news_data
     "get_news": {
+        "vietnam_news": get_news_vietnam,
         "alpha_vantage": get_alpha_vantage_news,
         "yfinance": get_news_yfinance,
     },
     "get_global_news": {
+        "vietnam_news": get_global_news_vietnam,
         "yfinance": get_global_news_yfinance,
         "alpha_vantage": get_alpha_vantage_global_news,
     },
@@ -109,6 +129,38 @@ VENDOR_METHODS = {
         "yfinance": get_yfinance_insider_transactions,
     },
 }
+
+VNSTOCK_METHODS = {
+    "get_stock_data",
+    "get_indicators",
+    "get_fundamentals",
+    "get_balance_sheet",
+    "get_cashflow",
+    "get_income_statement",
+}
+
+
+def _looks_like_empty_news(value) -> bool:
+    if not isinstance(value, str):
+        return False
+    lowered = value.lower()
+    return (
+        lowered.startswith("no news found")
+        or lowered.startswith("no vietnam news found")
+        or " no news found " in lowered
+        or "no vietnam news found" in lowered
+    )
+
+
+def _vietnam_primary_vendors(method: str, args: tuple) -> list[str]:
+    if not args:
+        return []
+    first_arg = args[0]
+    if method in VNSTOCK_METHODS and is_vietnam_symbol(first_arg):
+        return ["vnstock"]
+    if method == "get_news" and is_vietnam_symbol(first_arg):
+        return ["vietnam_news", "yfinance"]
+    return []
 
 def get_category_for_method(method: str) -> str:
     """Get the category that contains the specified method."""
@@ -141,9 +193,13 @@ def route_to_vendor(method: str, *args, **kwargs):
     if method not in VENDOR_METHODS:
         raise ValueError(f"Method '{method}' not supported")
 
-    # Build fallback chain: primary vendors first, then remaining available vendors
+    # Build fallback chain: Vietnam-specific vendors first for Vietnam symbols,
+    # then the configured vendors, then remaining available vendors.
     all_available_vendors = list(VENDOR_METHODS[method].keys())
-    fallback_vendors = primary_vendors.copy()
+    fallback_vendors = _vietnam_primary_vendors(method, args)
+    for vendor in primary_vendors:
+        if vendor not in fallback_vendors:
+            fallback_vendors.append(vendor)
     for vendor in all_available_vendors:
         if vendor not in fallback_vendors:
             fallback_vendors.append(vendor)
@@ -158,7 +214,10 @@ def route_to_vendor(method: str, *args, **kwargs):
         impl_func = vendor_impl[0] if isinstance(vendor_impl, list) else vendor_impl
 
         try:
-            return impl_func(*args, **kwargs)
+            result = impl_func(*args, **kwargs)
+            if method in ("get_news", "get_global_news") and _looks_like_empty_news(result):
+                continue
+            return result
         except AlphaVantageRateLimitError:
             continue  # Rate limits: try the next vendor
         except NoMarketDataError as e:

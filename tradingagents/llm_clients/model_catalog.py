@@ -153,6 +153,27 @@ MODEL_OPTIONS: ProviderModeOptions = {
     # so the two provider keys share one model list.
     "minimax": _MINIMAX_MODELS,
     "minimax-cn": _MINIMAX_MODELS,
+    "mimo": {
+        "quick": [
+            ("Mimo v2.5 - Fast OpenAI-compatible model", "mimo-v2.5"),
+            ("Custom model ID", "custom"),
+        ],
+        "deep": [
+            ("Mimo v2.5 Pro - Thinking OpenAI-compatible model", "mimo-v2.5-pro"),
+            ("Mimo v2.5 - Fast OpenAI-compatible model", "mimo-v2.5"),
+            ("Custom model ID", "custom"),
+        ],
+    },
+    "9router": {
+        "quick": [
+            ("tier2 - Default 9router model tier", "tier2"),
+            ("Custom model ID", "custom"),
+        ],
+        "deep": [
+            ("tier2 - Default 9router model tier", "tier2"),
+            ("Custom model ID", "custom"),
+        ],
+    },
     # OpenRouter: fetched dynamically. Azure: any deployed model name.
     # Ollama display labels intentionally omit a "local" marker — the
     # endpoint is now configurable via OLLAMA_BASE_URL, so the same labels

@@ -25,6 +25,7 @@ from tradingagents.agents.utils.agent_states import (
     RiskDebateState,
 )
 from tradingagents.dataflows.config import set_config
+from tradingagents.dataflows.vietnam_symbols import is_vietnam_symbol
 
 # Import the new abstract tool methods from agent_utils
 from tradingagents.agents.utils.agent_utils import (
@@ -237,8 +238,19 @@ class TradingAgentsGraph:
             end = start + timedelta(days=holding_days + 7)  # buffer for weekends/holidays
             end_str = end.strftime("%Y-%m-%d")
 
-            stock = yf.Ticker(ticker).history(start=trade_date, end=end_str)
-            bench = yf.Ticker(benchmark).history(start=trade_date, end=end_str)
+            if is_vietnam_symbol(ticker):
+                from tradingagents.dataflows.vnstock_adapter import get_price_history_frame
+
+                stock = get_price_history_frame(ticker, trade_date, end_str)
+            else:
+                stock = yf.Ticker(ticker).history(start=trade_date, end=end_str)
+
+            if is_vietnam_symbol(benchmark):
+                from tradingagents.dataflows.vnstock_adapter import get_price_history_frame
+
+                bench = get_price_history_frame(benchmark, trade_date, end_str)
+            else:
+                bench = yf.Ticker(benchmark).history(start=trade_date, end=end_str)
 
             if len(stock) < 2 or len(bench) < 2:
                 return None, None, None

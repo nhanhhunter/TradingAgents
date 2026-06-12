@@ -1,16 +1,16 @@
 # Graph Report - TradingAgents  (2026-06-12)
 
 ## Corpus Check
-- 156 files · ~243,483 words
+- 168 files · ~246,965 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1621 nodes · 2753 edges · 106 communities (98 shown, 8 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 225 edges (avg confidence: 0.53)
+- 1733 nodes · 2994 edges · 115 communities (106 shown, 9 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 230 edges (avg confidence: 0.54)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `263d0569`
+- Built from commit: `cd27edff`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,9 +68,11 @@
 - [[_COMMUNITY_Community 50|Community 50]]
 - [[_COMMUNITY_Community 51|Community 51]]
 - [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 53|Community 53]]
 - [[_COMMUNITY_Community 54|Community 54]]
 - [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 57|Community 57]]
 - [[_COMMUNITY_Community 58|Community 58]]
 - [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
@@ -117,6 +119,12 @@
 - [[_COMMUNITY_Community 101|Community 101]]
 - [[_COMMUNITY_Community 102|Community 102]]
 - [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 108|Community 108]]
+- [[_COMMUNITY_Community 109|Community 109]]
+- [[_COMMUNITY_Community 110|Community 110]]
+- [[_COMMUNITY_Community 111|Community 111]]
+- [[_COMMUNITY_Community 112|Community 112]]
+- [[_COMMUNITY_Community 113|Community 113]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `make_log()` - 40 edges
@@ -125,10 +133,10 @@
 4. `get_instrument_context_from_state()` - 32 edges
 5. `BaseLLMClient` - 32 edges
 6. `TradingMemoryLog` - 31 edges
-7. `TestDeferredReflection` - 29 edges
-8. `get_capabilities()` - 28 edges
-9. `get_language_instruction()` - 27 edges
-10. `Glossary` - 27 edges
+7. `NoMarketDataError` - 31 edges
+8. `TestDeferredReflection` - 29 edges
+9. `get_capabilities()` - 28 edges
+10. `get_language_instruction()` - 27 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `MessageBuffer` --uses--> `AnalystWallTimeTracker`  [INFERRED]
@@ -143,21 +151,21 @@
   tests/test_crypto_asset_mode.py → tradingagents/graph/propagation.py
 
 ## Import Cycles
-- None detected.
+- 1-file cycle: `tradingagents/dataflows/vietnam_news.py -> tradingagents/dataflows/vietnam_news.py`
 
-## Communities (106 total, 8 thin omitted)
+## Communities (115 total, 9 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
 Nodes (34): ChatOpenAI, DeepSeekChatOpenAI, _input_to_messages(), MinimaxChatOpenAI, NormalizedChatOpenAI, MiniMax-specific overrides on top of the OpenAI-compatible client.      M2.x r, ChatOpenAI with normalized content output and capability-aware binding.      T, Normalise a langchain LLM input to a list of message objects.      Accepts a l (+26 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.06
-Nodes (37): Validate ``value`` is safe to interpolate into a filesystem path.      Tickers, safe_ticker_component(), save_output(), checkpoint_step(), clear_checkpoint(), _db_path(), get_checkpointer(), has_checkpoint() (+29 more)
+Cohesion: 0.07
+Nodes (35): Validate ``value`` is safe to interpolate into a filesystem path.      Tickers, safe_ticker_component(), checkpoint_step(), clear_checkpoint(), _db_path(), get_checkpointer(), has_checkpoint(), LangGraph checkpoint support for resumable analysis runs.  Per-ticker SQLite d (+27 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.06
-Nodes (36): get_category_for_method(), Get the category that contains the specified method., Route method calls to appropriate vendor implementation with fallback support., route_to_vendor(), Resolve ticker identity once and return the full instrument context., BuildInstrumentContextTests, ContextAnchoredPlaceholderTests, Tests for deterministic instrument-identity resolution (#814) and the context-a (+28 more)
+Cohesion: 0.10
+Nodes (26): get_category_for_method(), _looks_like_empty_news(), Get the category that contains the specified method., Route method calls to appropriate vendor implementation with fallback support., route_to_vendor(), Any, _clean_identity_value(), Return a trimmed string, or None for empty / placeholder-ish values. (+18 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
@@ -189,7 +197,7 @@ Nodes (29): get_model_options(), Return shared model options for a provider and 
 
 ### Community 10 - "Community 10"
 Cohesion: 0.15
-Nodes (12): PortfolioDecision, Structured output produced by the Portfolio Manager.      The model fills ever, _make_pm_state(), Tests for TradingMemoryLog — storage, deferred reflection, PM injection, legacy, Minimal AgentState dict for portfolio_manager_node., PM prompt omits the lessons section entirely when past_context is empty., The structured PortfolioDecision is rendered to markdown that         downstrea, If a provider does not support with_structured_output, the agent         falls (+4 more)
+Nodes (13): PortfolioDecision, Structured output produced by the Portfolio Manager.      The model fills ever, PortfolioDecision, _make_pm_state(), _price_df(), Tests for TradingMemoryLog — storage, deferred reflection, PM injection, legacy, Only 1 data point available → returns (None, None, None), no crash., Minimal DataFrame matching yfinance .history() output shape. (+5 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.09
@@ -200,28 +208,28 @@ Cohesion: 0.07
 Nodes (27): Agent, Backlog Outcome Loop, Component Taxonomy, Context Phase, Context Score, Context Score, Durable Layer, Entropy Score (+19 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.07
-Nodes (45): create_fundamentals_analyst(), create_market_analyst(), create_news_analyst(), _build_system_message(), create_sentiment_analyst(), create_social_media_analyst(), Sentiment analyst — multi-source sentiment analysis for a target ticker.  Prev, Assemble the sentiment-analyst system message with structured data blocks. (+37 more)
+Cohesion: 0.18
+Nodes (14): create_fundamentals_analyst(), create_market_analyst(), create_news_analyst(), Set up and compile the agent workflow graph.          Args:             selec, create_bear_researcher(), create_bull_researcher(), create_aggressive_debator(), create_conservative_debator() (+6 more)
 
 ### Community 14 - "Community 14"
 Cohesion: 0.12
-Nodes (19): AgentState, ConditionalLogic, ConditionalLogic, Initialize with configuration parameters., Determine if market analysis should continue., Determine if sentiment-analyst tool round should continue.          Method nam, Determine if news analysis should continue., Determine if fundamentals analysis should continue. (+11 more)
+Nodes (14): AgentState, ConditionalLogic, ConditionalLogic, Initialize with configuration parameters., Determine if market analysis should continue., Determine if sentiment-analyst tool round should continue.          Method nam, Determine if news analysis should continue., Determine if fundamentals analysis should continue. (+6 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.14
 Nodes (27): install-harness.sh script, agent_shim_block(), append_or_replace_agent_harness_block(), backup_agent_file(), backup_claude_file(), can_prompt(), check_protected_target_paths(), claude_shim_block() (+19 more)
 
 ### Community 16 - "Community 16"
-Cohesion: 0.08
-Nodes (24): get_analysis_date(), get_user_selections(), Get all user selections before starting the analysis display., Get the analysis date from user input., ask_anthropic_effort(), ask_gemini_thinking_config(), ask_glm_region(), ask_minimax_region() (+16 more)
+Cohesion: 0.06
+Nodes (47): get_analysis_date(), get_user_selections(), Get all user selections before starting the analysis display., Get the analysis date from user input., ask_anthropic_effort(), ask_gemini_thinking_config(), ask_glm_region(), ask_minimax_region() (+39 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.18
 Nodes (8): AnalystExecutionPlan, AnalystNodeSpec, AnalystWallTimeTracker, build_analyst_execution_plan(), get_initial_analyst_node(), sync_analyst_tracker_from_chunk(), AnalystExecutionPlanTests, AnalystWallTimeTrackerTests
 
 ### Community 18 - "Community 18"
-Cohesion: 0.22
-Nodes (10): Propagator, Handles state initialization and propagation through the graph., Initialize with configuration parameters., Create the initial state for the agent graph.          ``instrument_context``, Get arguments for the graph invocation.          Args:             callbacks:, PortfolioDecision, Any, TypedDict (+2 more)
+Cohesion: 0.17
+Nodes (14): Propagator, Handles state initialization and propagation through the graph., Initialize with configuration parameters., Create the initial state for the agent graph.          ``instrument_context``, Get arguments for the graph invocation.          Args:             callbacks:, GraphSetup, Handles the setup and configuration of the agent graph., Extract the 5-tier portfolio rating from the Portfolio Manager's decision.  Th (+6 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.08
@@ -240,7 +248,7 @@ Cohesion: 0.09
 Nodes (22): Analyst Team, Checkpoint resume, Citation, CLI Usage, Contributing, Decision log, Docker, Implementation Details (+14 more)
 
 ### Community 23 - "Community 23"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (8): Replace pending tag and append REFLECTION section using atomic write., Append-only markdown log of trading decisions and reflections., Apply multiple outcome updates in a single read + atomic write.          Each, Drop oldest resolved blocks when their count exceeds max_entries.          Pen, Parse all entries from log. Returns list of dicts., Return entries with outcome:pending (for Phase B)., Return formatted past context string for agent prompt injection., TradingMemoryLog
 
 ### Community 24 - "Community 24"
@@ -248,60 +256,60 @@ Cohesion: 0.08
 Nodes (43): PortfolioRating, Pydantic schemas used by agents that produce structured output.  The framework, Structured transaction proposal produced by the Trader.      The trader reads, Render a TraderProposal to markdown.      The trailing ``FINAL TRANSACTION PRO, Render a PortfolioDecision back to the markdown shape the rest of the system exp, Discrete sentiment direction produced by the Sentiment Analyst.      Six tiers, Structured sentiment report produced by the Sentiment Analyst.      Replaces t, Render a SentimentReport to the markdown shape the rest of the system expects. (+35 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.16
-Nodes (12): get_config(), initialize_config(), Initialize the configuration with default values., Update the configuration with custom values.      Dict-valued keys (e.g. ``dat, Get the current configuration., set_config(), DataflowsConfigIsolationTests, Config isolation: get/set must not leak nested-dict references. (+4 more)
+Cohesion: 0.11
+Nodes (19): get_config(), initialize_config(), Initialize the configuration with default values., Update the configuration with custom values.      Dict-valued keys (e.g. ``dat, Get the current configuration., set_config(), _extract_article_data(), get_global_news_yfinance() (+11 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.16
-Nodes (6): TestParseRating, Append-only markdown decision log for TradingAgents., Append pending entry at end of propagate(). No LLM call., parse_rating(), Shared 5-tier rating vocabulary and a deterministic heuristic parser.  The sam, Heuristically extract a 5-tier rating from prose text.      Two-pass strategy:
+Cohesion: 0.13
+Nodes (8): Return one of Buy / Overweight / Hold / Underweight / Sell., Tests for the shared rating heuristic and the SignalProcessor adapter.  The Po, TestParseRating, Append-only markdown decision log for TradingAgents., Append pending entry at end of propagate(). No LLM call., parse_rating(), Shared 5-tier rating vocabulary and a deterministic heuristic parser.  The sam, Heuristically extract a 5-tier rating from prose text.      Two-pass strategy:
 
 ### Community 27 - "Community 27"
 Cohesion: 0.26
 Nodes (11): Copy-HarnessFile(), Get-AgentShimBlock(), Get-DefaultCliBaseUrl(), Install-HarnessCliBinary(), Fail(), Merge-Gitignore(), Read-CliReleaseTag(), Read-RemoteText() (+3 more)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.23
-Nodes (11): AnalystType, AssetType, AnalystType, AssetType, detect_asset_type(), filter_analysts_for_asset_type(), get_analysis_date(), Select analysts using an interactive checkbox. (+3 more)
+Cohesion: 0.25
+Nodes (9): AnalystType, AssetType, AnalystType, AssetType, detect_asset_type(), filter_analysts_for_asset_type(), Select analysts using an interactive checkbox., select_analysts() (+1 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.19
-Nodes (15): _clean_dataframe(), _ensure_date_column(), filter_financials_by_date(), load_ohlcv(), Drop financial statement columns (fiscal period timestamps) after curr_date., Normalize the date column to ``Date``.      Some yfinance builds leave the ind, Normalize a stock DataFrame for stockstats: parse dates, drop invalid rows, fill, Fetch OHLCV data with caching, filtered to prevent look-ahead bias.      Downl (+7 more)
+Cohesion: 0.13
+Nodes (27): _clean_dataframe(), _ensure_date_column(), filter_financials_by_date(), load_ohlcv(), Drop financial statement columns (fiscal period timestamps) after curr_date., Execute a yfinance call with exponential backoff on rate limits.      yfinance, Normalize the date column to ``Date``.      Some yfinance builds leave the ind, Normalize a stock DataFrame for stockstats: parse dates, drop invalid rows, fill (+19 more)
 
 ### Community 30 - "Community 30"
-Cohesion: 0.22
-Nodes (5): FinancialSituationMemory must not be importable from the memory module., rank_bm25 must not be present in the memory module namespace., TradingAgentsGraph must not expose reflect_and_remember., propagate() completes and stores the decision after the redesign., TestLegacyRemoval
+Cohesion: 0.18
+Nodes (6): FinancialSituationMemory must not be importable from the memory module., rank_bm25 must not be present in the memory module namespace., TradingAgentsGraph must not expose reflect_and_remember., create_portfolio_manager accepts only llm; passing memory= raises TypeError., propagate() completes and stores the decision after the redesign., TestLegacyRemoval
 
 ### Community 31 - "Community 31"
-Cohesion: 0.18
-Nodes (7): is_yahoo_safe(), normalize_symbol(), True when ``symbol`` only contains characters Yahoo symbols use., Map a user/broker symbol to its canonical Yahoo Finance symbol.      Resolutio, Tests for symbol normalization and the no-data routing sentinel., TestIsYahooSafe, TestNormalizeSymbol
+Cohesion: 0.31
+Nodes (3): normalize_symbol(), Map a user/broker symbol to its canonical Yahoo Finance symbol.      Resolutio, TestNormalizeSymbol
 
 ### Community 32 - "Community 32"
 Cohesion: 0.15
 Nodes (10): BaseCallbackHandler, Any, Callback handler that tracks LLM calls, tool calls, and token usage., Increment LLM call counter when an LLM starts., Increment LLM call counter when a chat model starts., Extract token usage from LLM response., Increment tool call counter when a tool starts., Return current statistics. (+2 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.18
-Nodes (15): get_vendor(), Get the configured vendor for a data category or specific tool method.     Tool, Execute a yfinance call with exponential backoff on rate limits.      yfinance, yf_retry(), get_balance_sheet(), get_cashflow(), get_fundamentals(), get_income_statement() (+7 more)
+Cohesion: 0.12
+Nodes (15): get_vendor(), Get the configured vendor for a data category or specific tool method.     Tool, _vietnam_primary_vendors(), is_vietnam_symbol(), normalize_vietnam_symbol(), Helpers for Vietnamese market symbols.  TradingAgents keeps Yahoo Finance as the, Return a trimmed, upper-case symbol for Vietnam routing checks., True for symbols that should use Vietnam-specific data sources. (+7 more)
 
 ### Community 34 - "Community 34"
-Cohesion: 0.18
-Nodes (9): Get provider-specific kwargs for LLM client creation., Create tool nodes for different data sources using abstract methods., Pick the benchmark ticker for alpha calculation against ``ticker``.          `, Fetch raw and alpha return for ticker over holding_days from trade_date., Resolve pending log entries for ticker at the start of a new run.          Fet, Main class that orchestrates the trading agents framework., Initialize the trading agents graph and components.          Args:, TradingAgentsGraph (+1 more)
+Cohesion: 0.19
+Nodes (9): Get provider-specific kwargs for LLM client creation., Create tool nodes for different data sources using abstract methods., Pick the benchmark ticker for alpha calculation against ``ticker``.          `, Resolve pending log entries for ticker at the start of a new run.          Fet, Main class that orchestrates the trading agents framework., Initialize the trading agents graph and components.          Args:, TradingAgentsGraph, Any (+1 more)
 
 ### Community 35 - "Community 35"
-Cohesion: 0.12
-Nodes (9): When max_entries is set and exceeded, oldest resolved entries are pruned., Pending entries (unresolved) are kept regardless of the cap., No rotation when resolved count <= max_entries., Store a decision then immediately resolve it via the API., Same-ticker entries in same-ticker section; cross-ticker entries in cross-ticker, Cross-ticker entries show only the REFLECTION text, not the full DECISION., More than 5 same-ticker completed entries → only 5 injected., More than 3 cross-ticker completed entries → only 3 injected. (+1 more)
+Cohesion: 0.10
+Nodes (12): When max_entries is set and exceeded, oldest resolved entries are pruned., Pending entries (unresolved) are kept regardless of the cap., No rotation when resolved count <= max_entries., Store a decision then immediately resolve it via the API., If a provider does not support with_structured_output, the agent         falls, Same-ticker entries in same-ticker section; cross-ticker entries in cross-ticker, Cross-ticker entries show only the REFLECTION text, not the full DECISION., More than 5 same-ticker completed entries → only 5 injected. (+4 more)
 
 ### Community 36 - "Community 36"
 Cohesion: 0.18
 Nodes (8): _ohlcv(), DataFrame, Tests for tolerating a non-`Date` index column in stockstats_utils (#890).  Gu, OHLCV frame whose date column is named `date_col`., A frame with `index` instead of `Date` must still clean to a         usable, da, stockstats must compute indicators on a frame whose date column         arrived, TestCleanDataframeAcrossVersions, TestEnsureDateColumn
 
 ### Community 37 - "Community 37"
-Cohesion: 0.15
-Nodes (10): ChatAnthropic, AnthropicClient, NormalizedChatAnthropic, Whether Anthropic accepts the ``effort`` parameter for this model., ChatAnthropic with normalized content output.      Claude models with extended, Client for Anthropic Claude models., Return configured ChatAnthropic instance., Validate model for Anthropic. (+2 more)
+Cohesion: 0.22
+Nodes (7): ChatAnthropic, NormalizedChatAnthropic, Whether Anthropic accepts the ``effort`` parameter for this model., ChatAnthropic with normalized content output.      Claude models with extended, Return configured ChatAnthropic instance., _supports_effort(), Any
 
 ### Community 38 - "Community 38"
-Cohesion: 0.17
-Nodes (6): NoMarketDataError, Raised when a vendor returns no rows/records for a symbol.      Carries both t, Tests that empty vendor results never become fabricated data.  Covers two syst, TestLoadOhlcvNoPoison, TestRouteToVendorSentinel, TestNoMarketDataError
+Cohesion: 0.12
+Nodes (11): is_yahoo_safe(), NoMarketDataError, Symbol normalization and market-data error types for vendor calls.  Yahoo Fina, True when ``symbol`` only contains characters Yahoo symbols use., Raised when a vendor returns no rows/records for a symbol.      Carries both t, Tests that empty vendor results never become fabricated data.  Covers two syst, TestLoadOhlcvNoPoison, TestRouteToVendorSentinel (+3 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.13
@@ -312,8 +320,8 @@ Cohesion: 0.22
 Nodes (6): ABC, BaseLLMClient, Abstract base class for LLM clients., Return the provider name used in warning messages., Warn when the model is outside the known list for the provider., Validate that the model is supported by this client.
 
 ### Community 41 - "Community 41"
-Cohesion: 0.18
-Nodes (9): _llm_provider_table(), provider_default_url(), (display_name, provider_key, base_url) for every supported provider.      Shar, Return the default backend URL for a provider key, or None if unknown., Select the LLM provider and its API endpoint., select_llm_provider(), Tests for env-driven CLI behavior (#897, #873).  The config-layer override (TR, TestCliSkipsPromptsFromEnv (+1 more)
+Cohesion: 0.27
+Nodes (5): provider_default_url(), Return the default backend URL for a provider key, or None if unknown., Tests for env-driven CLI behavior (#897, #873).  The config-layer override (TR, TestCliSkipsPromptsFromEnv, TestProviderDefaultUrl
 
 ### Community 42 - "Community 42"
 Cohesion: 0.14
@@ -336,8 +344,8 @@ Cohesion: 0.83
 Nodes (3): build-harness-cli-release.sh script, fail(), usage()
 
 ### Community 47 - "Community 47"
-Cohesion: 0.17
-Nodes (12): _fetch_openrouter_models(), _prompt_custom_model_id(), Fetch available models from the OpenRouter API., Select an OpenRouter model from the newest available, or enter a custom ID., Prompt user to type a custom model ID., Select a model for the given provider and mode (quick/deep)., Select shallow thinking llm engine using an interactive selection., Select deep thinking llm engine using an interactive selection. (+4 more)
+Cohesion: 0.15
+Nodes (22): StockTwits public symbol-stream fetcher.  StockTwits exposes a per-symbol mess, save_output(), _collect_articles(), _dedupe_articles(), _fetch_rss(), _filter_articles(), _format_articles(), get_global_news_vietnam() (+14 more)
 
 ### Community 48 - "Community 48"
 Cohesion: 0.17
@@ -356,12 +364,16 @@ Cohesion: 0.18
 Nodes (10): Classification, Feature Intake, High-Risk, Input Types, Intake Flow, Lanes, Normal, Output (+2 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.21
-Nodes (7): Read the 5-tier rating out of a Portfolio Manager decision., Return one of Buy / Overweight / Hold / Underweight / Sell., SignalProcessor, Tests for the shared rating heuristic and the SignalProcessor adapter.  The Po, SignalProcessor must not invoke the LLM it was constructed with —         the r, TestSignalProcessor, Any
+Cohesion: 0.31
+Nodes (5): Read the 5-tier rating out of a Portfolio Manager decision., SignalProcessor, SignalProcessor must not invoke the LLM it was constructed with —         the r, TestSignalProcessor, Any
+
+### Community 53 - "Community 53"
+Cohesion: 0.16
+Nodes (28): is_vietnam_index(), True when the symbol represents the broad Vietnam index., _company_client(), ensure_vnstock_credentials(), _finance_client(), _format_statement(), get_balance_sheet(), get_cashflow() (+20 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.16
-Nodes (9): create_llm_client(), Create an LLM client for the specified provider.      Provider modules are imp, OpenAIClient, Client for OpenAI, Ollama, OpenRouter, and xAI providers.      For native Open, Return configured ChatOpenAI instance., Validate model for the provider., TestTemperatureForwarding, BaseLLMClient (+1 more)
+Cohesion: 0.15
+Nodes (11): BaseLLMClient, AnthropicClient, Client for Anthropic Claude models., Validate model for Anthropic., AzureOpenAIClient, Client for Azure OpenAI deployments.      Requires environment variables:, Azure accepts any deployed model name., create_llm_client() (+3 more)
 
 ### Community 55 - "Community 55"
 Cohesion: 0.18
@@ -371,13 +383,13 @@ Nodes (10): Architecture Questions, Candidate Epics, Candidate Product Docs, Fir
 Cohesion: 0.18
 Nodes (10): Acceptance Criteria, Design Notes, Evidence, Harness Delta, Lane, Product Contract, Relevant Product Docs, Status (+2 more)
 
-### Community 58 - "Community 58"
-Cohesion: 0.33
-Nodes (3): BaseLLMClient, DummyLLMClient, ModelValidationTests
+### Community 57 - "Community 57"
+Cohesion: 0.16
+Nodes (19): create_portfolio_manager(), Portfolio Manager: synthesises the risk-analyst debate into the final decision., create_research_manager(), Research Manager: turns the bull/bear debate into a structured investment plan f, main(), _make_pm_state(), _make_rm_state(), _make_trader_state() (+11 more)
 
 ### Community 59 - "Community 59"
-Cohesion: 0.25
-Nodes (5): get_ticker(), normalize_ticker_symbol(), Prompt the user to enter a ticker symbol, preserving exchange suffixes.      U, Normalize ticker input while preserving exchange suffixes., TickerSymbolHandlingTests
+Cohesion: 0.18
+Nodes (7): BuildInstrumentContextTests, Tests for deterministic instrument-identity resolution (#814) and the context-a, ResolveInstrumentIdentityTests, build_instrument_context(), Describe the exact instrument so agents preserve identity and ticker.      Whe, Resolve deterministic identity metadata (company name, sector, …) for a ticker., resolve_instrument_identity()
 
 ### Community 60 - "Community 60"
 Cohesion: 0.22
@@ -388,12 +400,12 @@ Cohesion: 0.22
 Nodes (8): Alternatives Considered, Application Flow, Data Model, Design, Domain Model, Interface Contract, Observability, UI / Platform Impact
 
 ### Community 62 - "Community 62"
-Cohesion: 0.21
-Nodes (8): get_known_models(), Shared model catalog for CLI selections and validation., Build known model names from the shared CLI catalog., Default base URL for ``provider``, with env-var overrides where defined., _resolve_provider_base_url(), Model name validators for each provider., Check if model name is valid for the given provider.      For ollama, openrout, validate_model()
+Cohesion: 0.28
+Nodes (6): get_known_models(), Shared model catalog for CLI selections and validation., Build known model names from the shared CLI catalog., Model name validators for each provider., Check if model name is valid for the given provider.      For ollama, openrout, validate_model()
 
 ### Community 63 - "Community 63"
-Cohesion: 0.32
-Nodes (7): _extract_article_data(), get_global_news_yfinance(), get_news_yfinance(), yfinance-based news data fetching functions., Retrieve global/macro economic news using yfinance Search.      Args:, Extract article data from yfinance news format (handles nested 'content' structu, Retrieve news for a specific stock ticker using yfinance.      Args:
+Cohesion: 0.19
+Nodes (10): _build_system_message(), create_sentiment_analyst(), create_social_media_analyst(), Sentiment analyst — multi-source sentiment analysis for a target ticker.  Prev, Assemble the sentiment-analyst system message with structured data blocks., Deprecated alias for :func:`create_sentiment_analyst`.      Kept so existing c, Create a sentiment analyst node for the trading graph.      Pre-fetches news +, Backwards-compatibility shim for the renamed module.  The agent is now ``senti (+2 more)
 
 ### Community 64 - "Community 64"
 Cohesion: 0.25
@@ -428,8 +440,8 @@ Cohesion: 0.25
 Nodes (7): Alternatives Considered, Consequences, Context, Decision, Follow-Up, NNNN Decision Title, Status
 
 ### Community 72 - "Community 72"
-Cohesion: 0.17
-Nodes (8): AzureChatOpenAI, AzureOpenAIClient, NormalizedAzureChatOpenAI, AzureChatOpenAI with normalized content output., Client for Azure OpenAI deployments.      Requires environment variables:, Return configured AzureChatOpenAI instance., Azure accepts any deployed model name., Any
+Cohesion: 0.29
+Nodes (5): AzureChatOpenAI, NormalizedAzureChatOpenAI, AzureChatOpenAI with normalized content output., Return configured AzureChatOpenAI instance., Any
 
 ### Community 73 - "Community 73"
 Cohesion: 0.33
@@ -480,8 +492,8 @@ Cohesion: 0.40
 Nodes (4): Evidence Rules, Matrix, Status Values, Test Matrix
 
 ### Community 85 - "Community 85"
-Cohesion: 0.12
-Nodes (10): Initialize the reflector with an LLM., Concise prompt for reflect_on_final_decision (Phase B log entries).          P, Single reflection call on the final trade decision with outcome context., Handles reflection on trading decisions., Reflector, Extract the 5-tier portfolio rating from the Portfolio Manager's decision.  Th, Return figures are present in the human message sent to the LLM., benchmark_name appears in the prompt label, not 'SPY' hardcoded. (+2 more)
+Cohesion: 0.14
+Nodes (9): Initialize the reflector with an LLM., Concise prompt for reflect_on_final_decision (Phase B log entries).          P, Single reflection call on the final trade decision with outcome context., Handles reflection on trading decisions., Reflector, Return figures are present in the human message sent to the LLM., benchmark_name appears in the prompt label, not 'SPY' hardcoded., Default benchmark_name keeps the SPY label for legacy callers. (+1 more)
 
 ### Community 86 - "Community 86"
 Cohesion: 0.40
@@ -520,23 +532,47 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 96 - "Community 96"
-Cohesion: 0.50
-Nodes (3): _price_df(), Only 1 data point available → returns (None, None, None), no crash., Minimal DataFrame matching yfinance .history() output shape.
+Cohesion: 0.20
+Nodes (7): OpenAIClient, Default base URL for ``provider``, with env-var overrides where defined., Client for OpenAI, Ollama, OpenRouter, and xAI providers.      For native Open, Return configured ChatOpenAI instance., Validate model for the provider., _resolve_provider_base_url(), Any
+
+### Community 108 - "Community 108"
+Cohesion: 0.22
+Nodes (8): Alternatives Considered, Application Flow, Data Model, Design, Domain Model, Interface Contract, Observability, UI / Platform Impact
+
+### Community 109 - "Community 109"
+Cohesion: 0.25
+Nodes (7): 0008 Vietnam Data and OpenAI-Compatible Providers, Alternatives Considered, Consequences, Context, Decision, Follow-Up, Status
+
+### Community 110 - "Community 110"
+Cohesion: 0.39
+Nodes (3): ContextAnchoredPlaceholderTests, #888 — the message-clear placeholder must not be a bare 'Continue'., create_msg_delete()
+
+### Community 111 - "Community 111"
+Cohesion: 0.29
+Nodes (6): Exec Plan, Goal, Risk Classification, Scope, Stop Conditions, Work Phases
+
+### Community 112 - "Community 112"
+Cohesion: 0.29
+Nodes (6): Affected Product Docs, Affected Users, Current Behavior, Non-Goals, Overview, Target Behavior
+
+### Community 113 - "Community 113"
+Cohesion: 0.29
+Nodes (6): Acceptance Evidence, Commands, Fixtures, Proof Strategy, Test Plan, Validation
 
 ## Knowledge Gaps
-- **299 isolated node(s):** `Console`, `LLMResult`, `DataFrame`, `DataFrame`, `SavePathType` (+294 more)
+- **327 isolated node(s):** `Console`, `LLMResult`, `DataFrame`, `DataFrame`, `SavePathType` (+322 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `create_llm_client()` connect `Community 54` to `Community 34`, `Community 4`, `Community 37`, `Community 40`, `Community 72`, `Community 13`, `Community 49`, `Community 50`, `Community 85`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
-- **Why does `TradingAgentsGraph` connect `Community 34` to `Community 1`, `Community 2`, `Community 3`, `Community 7`, `Community 8`, `Community 10`, `Community 14`, `Community 18`, `Community 50`, `Community 52`, `Community 85`, `Community 54`, `Community 23`, `Community 25`, `Community 30`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
-- **Why does `get_api_key_env()` connect `Community 21` to `Community 16`, `Community 54`, `Community 28`, `Community 62`?**
-  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `create_llm_client()` connect `Community 54` to `Community 96`, `Community 34`, `Community 4`, `Community 40`, `Community 49`, `Community 18`, `Community 50`, `Community 57`?**
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `TradingAgentsGraph` connect `Community 34` to `Community 33`, `Community 1`, `Community 35`, `Community 3`, `Community 7`, `Community 8`, `Community 10`, `Community 14`, `Community 18`, `Community 50`, `Community 52`, `Community 85`, `Community 54`, `Community 23`, `Community 25`, `Community 30`?**
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
+- **Why does `datetime` connect `Community 47` to `Community 4`, `Community 8`, `Community 11`, `Community 18`, `Community 53`, `Community 25`, `Community 29`, `Community 63`?**
+  _High betweenness centrality (0.073) - this node is a cross-community bridge._
 - **Are the 19 inferred relationships involving `TradingAgentsGraph` (e.g. with `MessageBuffer` and `Path`) actually correct?**
   _`TradingAgentsGraph` has 19 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 6 inferred relationships involving `TestTradingMemoryLogCore` (e.g. with `PortfolioDecision` and `PortfolioRating`) actually correct?**
@@ -544,4 +580,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 17 inferred relationships involving `BaseLLMClient` (e.g. with `AnthropicClient` and `NormalizedChatAnthropic`) actually correct?**
   _`BaseLLMClient` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Console`, `Fetch announcements from endpoint. Returns dict with announcements and settings.`, `Display announcements panel. Prompts for Enter if require_attention is True.` to the rest of the system?**
-  _650 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _689 weakly-connected nodes found - possible documentation gaps or missing edges._

@@ -23,7 +23,7 @@ def test_every_select_llm_provider_choice_has_an_entry():
         "openai", "google", "anthropic", "xai", "deepseek",
         "qwen", "qwen-cn",
         "glm", "glm-cn",
-        "minimax", "minimax-cn",
+        "minimax", "minimax-cn", "mimo", "9router",
         "openrouter", "azure", "ollama",
     }
     assert expected.issubset(PROVIDER_API_KEY_ENV.keys())
@@ -44,6 +44,8 @@ def test_every_select_llm_provider_choice_has_an_entry():
         ("glm-cn",     "ZHIPU_CN_API_KEY"),
         ("minimax",    "MINIMAX_API_KEY"),
         ("minimax-cn", "MINIMAX_CN_API_KEY"),
+        ("mimo",       "MIMO_API_KEY"),
+        ("9router",    "9ROUTER_API_KEY"),
         ("openrouter", "OPENROUTER_API_KEY"),
     ],
 )

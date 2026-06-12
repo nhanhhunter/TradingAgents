@@ -58,6 +58,8 @@ def test_resolver_does_not_affect_other_providers(monkeypatch):
     mod = _reload_client()
     assert mod._resolve_provider_base_url("xai") == "https://api.x.ai/v1"
     assert mod._resolve_provider_base_url("deepseek") == "https://api.deepseek.com"
+    assert mod._resolve_provider_base_url("mimo") == "https://token-plan-sgp.xiaomimimo.com/v1"
+    assert mod._resolve_provider_base_url("9router") == "http://9router:20128/v1"
 
 
 def test_client_get_llm_picks_up_env(monkeypatch):

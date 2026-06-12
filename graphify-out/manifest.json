@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "cli/utils.py": {
-    "mtime": 1781227418.080194,
-    "ast_hash": "49942f9589c438e0e45bf37a35328652",
+    "mtime": 1781249478.7005932,
+    "ast_hash": "d9018005f4939eff6abf532bc9e17f11",
     "semantic_hash": ""
   },
   "main.py": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "tests/test_api_key_env.py": {
-    "mtime": 1781227418.2141924,
-    "ast_hash": "3549161e0d5f6ea2eb89fd859ece5394",
+    "mtime": 1781249295.4255152,
+    "ast_hash": "bb3280a0461ccae0fde105b2b89db1fe",
     "semantic_hash": ""
   },
   "tests/test_capabilities.py": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "tests/test_cli_env_skip.py": {
-    "mtime": 1781227418.2508233,
-    "ast_hash": "f89ce3b29f6279d3eb582ad4089a5411",
+    "mtime": 1781249295.9241333,
+    "ast_hash": "1b1df3762928bab986559dcdddec8eed",
     "semantic_hash": ""
   },
   "tests/test_crypto_asset_mode.py": {
@@ -160,8 +160,8 @@
     "semantic_hash": ""
   },
   "tests/test_model_validation.py": {
-    "mtime": 1781227418.3850205,
-    "ast_hash": "f86b3edb89f45adeae50abc3cf0d684b",
+    "mtime": 1781249296.3846006,
+    "ast_hash": "9e003dd47366ded02aefd854e1266be4",
     "semantic_hash": ""
   },
   "tests/test_no_data_handling.py": {
@@ -170,8 +170,8 @@
     "semantic_hash": ""
   },
   "tests/test_ollama_base_url.py": {
-    "mtime": 1781227418.4147813,
-    "ast_hash": "98126ee21bf72d9048216062bd3b5f5d",
+    "mtime": 1781249296.920349,
+    "ast_hash": "ede7a12562ec1d85a0a2db03f8d79a98",
     "semantic_hash": ""
   },
   "tests/test_reddit_fallback.py": {
@@ -385,8 +385,8 @@
     "semantic_hash": ""
   },
   "tradingagents/dataflows/interface.py": {
-    "mtime": 1781227419.1571474,
-    "ast_hash": "85ba25175b20e16cf14abf0f374ca2f8",
+    "mtime": 1781249455.7254097,
+    "ast_hash": "9e064b77043e3f7563217916c2f4ea79",
     "semantic_hash": ""
   },
   "tradingagents/dataflows/market_data_validator.py": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "tradingagents/default_config.py": {
-    "mtime": 1781227419.2893088,
-    "ast_hash": "9bc9418df60928febea5cb5fde606c8a",
+    "mtime": 1781249520.4727993,
+    "ast_hash": "6a24cf7c1c779b4420f60d49115818b7",
     "semantic_hash": ""
   },
   "tradingagents/graph/__init__.py": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "tradingagents/graph/trading_graph.py": {
-    "mtime": 1781227419.4076617,
-    "ast_hash": "8d0a4ac6f70b0e783a3be84809df6bbd",
+    "mtime": 1781249520.7890577,
+    "ast_hash": "cf59d1d4e1e1e4ed52defb32d2801875",
     "semantic_hash": ""
   },
   "tradingagents/llm_clients/__init__.py": {
@@ -490,8 +490,8 @@
     "semantic_hash": ""
   },
   "tradingagents/llm_clients/api_key_env.py": {
-    "mtime": 1781227419.44738,
-    "ast_hash": "586917c3bd8c858846beddb7b8ecc83e",
+    "mtime": 1781249476.6388092,
+    "ast_hash": "f51f3eeab5905cc1abbc05217f04f1bf",
     "semantic_hash": ""
   },
   "tradingagents/llm_clients/azure_client.py": {
@@ -520,13 +520,13 @@
     "semantic_hash": ""
   },
   "tradingagents/llm_clients/model_catalog.py": {
-    "mtime": 1781227419.5139475,
-    "ast_hash": "eee667f5d5ffc5521ab59f00b87d3eff",
+    "mtime": 1781249477.9400837,
+    "ast_hash": "2a57bac8f5afd52cb7002bd509165e30",
     "semantic_hash": ""
   },
   "tradingagents/llm_clients/openai_client.py": {
-    "mtime": 1781227419.5203068,
-    "ast_hash": "7380b478f1e01f48255d3f9a48dfd88b",
+    "mtime": 1781249477.2987702,
+    "ast_hash": "aa3f516da76bd9d44ff359c55942cb32",
     "semantic_hash": ""
   },
   "tradingagents/llm_clients/validators.py": {
@@ -590,8 +590,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1781227417.817761,
-    "ast_hash": "8a3cbc7696dad9f1f69d0fd52947fc15",
+    "mtime": 1781249643.885468,
+    "ast_hash": "bf5711ffc193129cce55a8fe19c5d101",
     "semantic_hash": ""
   },
   "cli/static/welcome.txt": {
@@ -847,6 +847,66 @@
   "scripts/install-harness.sh": {
     "mtime": 1781246592.082937,
     "ast_hash": "ffe19151c4904f8cb9fdbc149d6bfb4a",
+    "semantic_hash": ""
+  },
+  "tests/test_vietnam_news.py": {
+    "mtime": 1781249280.0933821,
+    "ast_hash": "1e5a44c0b49ee0d088b98b5b8b3fcb4d",
+    "semantic_hash": ""
+  },
+  "tests/test_vietnam_routing.py": {
+    "mtime": 1781249499.9131398,
+    "ast_hash": "1229ae58436c58bdd54832b159646a99",
+    "semantic_hash": ""
+  },
+  "tests/test_vietnam_symbols.py": {
+    "mtime": 1781249279.0831354,
+    "ast_hash": "20df4b355c95c69326fb1dacf1a375f1",
+    "semantic_hash": ""
+  },
+  "tests/test_vnstock_adapter.py": {
+    "mtime": 1781250010.7984743,
+    "ast_hash": "6614446e878e30e95e4fc588e9950901",
+    "semantic_hash": ""
+  },
+  "tradingagents/dataflows/vietnam_news.py": {
+    "mtime": 1781249424.4891312,
+    "ast_hash": "e96522067f52158c788061141addea24",
+    "semantic_hash": ""
+  },
+  "tradingagents/dataflows/vietnam_symbols.py": {
+    "mtime": 1781249423.9553454,
+    "ast_hash": "8737c727ff626426792feafa0451cdb0",
+    "semantic_hash": ""
+  },
+  "tradingagents/dataflows/vnstock_adapter.py": {
+    "mtime": 1781250010.198737,
+    "ast_hash": "91c5b66217dbd125e85fdb8d64126f5c",
+    "semantic_hash": ""
+  },
+  "docs/decisions/0008-vietnam-data-and-openai-compatible-providers.md": {
+    "mtime": 1781249677.8522615,
+    "ast_hash": "335aef7eec024db28d06ad1a231b251b",
+    "semantic_hash": ""
+  },
+  "docs/stories/epics/E01-vietnam-market-data/US-001-vnstock-vietnam-news-llm-providers/design.md": {
+    "mtime": 1781249676.6087642,
+    "ast_hash": "6813d680bd36efc188c706b1085cb6db",
+    "semantic_hash": ""
+  },
+  "docs/stories/epics/E01-vietnam-market-data/US-001-vnstock-vietnam-news-llm-providers/execplan.md": {
+    "mtime": 1781249676.9453743,
+    "ast_hash": "73b801930f9a6bf15bf06e51e993197d",
+    "semantic_hash": ""
+  },
+  "docs/stories/epics/E01-vietnam-market-data/US-001-vnstock-vietnam-news-llm-providers/overview.md": {
+    "mtime": 1781249676.1292112,
+    "ast_hash": "92b7c93197a922d8aaae93a1cf6b498c",
+    "semantic_hash": ""
+  },
+  "docs/stories/epics/E01-vietnam-market-data/US-001-vnstock-vietnam-news-llm-providers/validation.md": {
+    "mtime": 1781249677.3575456,
+    "ast_hash": "27360ddf7b4df8ab20d4c41f694e11ce",
     "semantic_hash": ""
   }
 }
