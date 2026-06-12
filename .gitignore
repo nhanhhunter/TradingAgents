@@ -221,3 +221,10 @@ __marimo__/
 # Enterprise env file (secrets) and generated run reports
 .env.enterprise
 reports/
+
+# Harness durable layer
+harness.db
+harness.db-wal
+harness.db-shm
+scripts/bin/harness-cli
+scripts/bin/harness-cli.exe
