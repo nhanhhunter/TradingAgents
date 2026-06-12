@@ -17,6 +17,7 @@ from tradingagents.llm_clients import create_llm_client
 
 from tradingagents.agents import *
 from tradingagents.default_config import DEFAULT_CONFIG
+from tradingagents.agents.utils.historical_reports import build_historical_report_context
 from tradingagents.agents.utils.memory import TradingMemoryLog
 from tradingagents.dataflows.utils import safe_ticker_component
 from tradingagents.agents.utils.agent_states import (
@@ -371,12 +372,19 @@ class TradingAgentsGraph:
         # Initialize state — inject memory log context for PM and the
         # deterministically resolved instrument identity for all agents.
         past_context = self.memory_log.get_past_context(company_name)
+        historical_report_context = build_historical_report_context(
+            self.config,
+            company_name,
+            str(trade_date),
+            memory_entries=self.memory_log.load_entries(),
+        )
         instrument_context = self.resolve_instrument_context(company_name, asset_type)
         init_agent_state = self.propagator.create_initial_state(
             company_name,
             trade_date,
             asset_type=asset_type,
             past_context=past_context,
+            historical_report_context=historical_report_context,
             instrument_context=instrument_context,
         )
         args = self.propagator.get_graph_args()

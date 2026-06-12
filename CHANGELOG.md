@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Breaking changes within the 0.x line are called out explicitly.
 
+## Unreleased
+
+### Added
+
+- **Historical detailed report context for the Portfolio Manager.** The PM now
+  receives a bounded summary of up to three prior same-ticker full-state JSON
+  reports, including analyst report highlights and resolved decision-log
+  outcome/reflection when available. The decision log remains the primary
+  learning mechanism; historical report context is prompt-bounded hindsight.
+
 ## [0.2.5] — 2026-05-11
 
 ### Added

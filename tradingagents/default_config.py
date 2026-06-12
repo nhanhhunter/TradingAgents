@@ -18,6 +18,9 @@ _ENV_OVERRIDES = {
     "TRADINGAGENTS_CHECKPOINT_ENABLED":   "checkpoint_enabled",
     "TRADINGAGENTS_BENCHMARK_TICKER":     "benchmark_ticker",
     "TRADINGAGENTS_TEMPERATURE":          "temperature",
+    "TRADINGAGENTS_HISTORICAL_REPORT_CONTEXT_ENABLED": "historical_report_context_enabled",
+    "TRADINGAGENTS_HISTORICAL_REPORT_CONTEXT_MAX_RUNS": "historical_report_context_max_runs",
+    "TRADINGAGENTS_HISTORICAL_REPORT_CONTEXT_MAX_CHARS_PER_RUN": "historical_report_context_max_chars_per_run",
 }
 
 
@@ -51,6 +54,12 @@ DEFAULT_CONFIG = _apply_env_overrides({
     # the oldest resolved entries are pruned once this limit is exceeded.
     # Pending entries are never pruned. None disables rotation entirely.
     "memory_log_max_entries": None,
+    # Bounded prior same-ticker full-state report context injected into the
+    # Portfolio Manager only. This complements the decision log without
+    # changing the memory log or JSON report formats.
+    "historical_report_context_enabled": True,
+    "historical_report_context_max_runs": 3,
+    "historical_report_context_max_chars_per_run": 4000,
     # LLM settings
     "llm_provider": "openai",
     "deep_think_llm": "gpt-5.5",

@@ -318,6 +318,20 @@ The decision log is always on. Each completed run appends its decision to `~/.tr
 
 Override the path with `TRADINGAGENTS_MEMORY_LOG_PATH`.
 
+The Portfolio Manager also receives a bounded summary of up to three prior
+same-ticker full-state JSON reports from
+`~/.tradingagents/logs/<TICKER>/TradingAgentsStrategy_logs/`. This context is
+drawn from `market_report`, `sentiment_report`, `news_report`,
+`fundamentals_report`, and the prior final decision, with realised
+outcome/reflection attached when the decision log has resolved that run. It is
+used only as historical context; current analyst evidence remains the source of
+truth for the new decision.
+
+Historical report context is on by default. Override it with
+`TRADINGAGENTS_HISTORICAL_REPORT_CONTEXT_ENABLED`,
+`TRADINGAGENTS_HISTORICAL_REPORT_CONTEXT_MAX_RUNS`, and
+`TRADINGAGENTS_HISTORICAL_REPORT_CONTEXT_MAX_CHARS_PER_RUN`.
+
 ### Checkpoint resume
 
 Checkpoint resume is opt-in via `--checkpoint`. When enabled, LangGraph saves state after each node so a crashed or interrupted run resumes from the last successful step instead of starting over. On a resume run you will see `Resuming from step N for <TICKER> on <date>` in the logs; on a new run you will see `Starting fresh`. Checkpoints are cleared automatically on successful completion.
@@ -377,4 +391,3 @@ Please reference our work if you find *TradingAgents* provides you with some hel
       url={https://arxiv.org/abs/2412.20138}, 
 }
 ```
-

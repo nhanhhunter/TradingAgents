@@ -38,6 +38,16 @@ def create_portfolio_manager(llm):
             if past_context
             else ""
         )
+        historical_report_context = state.get("historical_report_context", "")
+        historical_reports_line = (
+            "- Historical detailed reports from prior same-ticker analyses "
+            "(hindsight context only):\n"
+            "Use these prior reports only as historical context. Do not override "
+            "current analyst evidence. Call out stale or contradicted prior theses.\n"
+            f"{historical_report_context}\n"
+            if historical_report_context
+            else ""
+        )
 
         prompt = f"""As the Portfolio Manager, synthesize the risk analysts' debate and deliver the final trading decision.
 
@@ -56,6 +66,7 @@ def create_portfolio_manager(llm):
 - Research Manager's investment plan: **{research_plan}**
 - Trader's transaction proposal: **{trader_plan}**
 {lessons_line}
+{historical_reports_line}
 **Risk Analysts Debate History:**
 {history}
 
