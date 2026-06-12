@@ -41,7 +41,6 @@ Hard gates:
 3. Add narrow routing and provider registry hooks.
 4. Update docs.
 5. Verify with focused and full tests.
-6. Update graphify graph.
 
 ## Stop Conditions
 
