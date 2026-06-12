@@ -58,6 +58,7 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
              mock.patch.object(m, "fetch_announcements", return_value=None), \
              mock.patch.object(m, "display_announcements"), \
              mock.patch.object(m, "get_ticker", return_value="AAPL"), \
+             mock.patch.object(m, "ensure_vnstock_api_key_for_symbol") as ensure_vnstock_key, \
              mock.patch.object(m, "get_analysis_date", return_value="2026-05-29"), \
              mock.patch.object(m, "select_analysts", return_value=[]), \
              mock.patch.object(m, "select_research_depth", return_value=1), \
@@ -75,6 +76,7 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
         prompt_deep.assert_not_called()
         # API key is still verified for the env-configured provider.
         ensure_key.assert_called_once()
+        ensure_vnstock_key.assert_called_once_with("AAPL")
 
         # The env values flow into the returned selections.
         self.assertEqual(sel["llm_provider"], "openai")
@@ -82,6 +84,41 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
         self.assertEqual(sel["shallow_thinker"], "deepseek-v4-pro")
         self.assertEqual(sel["deep_thinker"], "kimi-k2.5")
         self.assertEqual(sel["output_language"], "Japanese")
+
+    def test_cli_checks_vnstock_key_after_ticker_entry(self):
+        import cli.main as m
+
+        fake_cfg = dict(m.DEFAULT_CONFIG)
+        fake_cfg.update({
+            "llm_provider": "deepseek",
+            "backend_url": "https://api.deepseek.com",
+            "quick_think_llm": "deepseek-chat",
+            "deep_think_llm": "deepseek-reasoner",
+            "output_language": "English",
+        })
+
+        with mock.patch.dict(os.environ, {
+                "TRADINGAGENTS_LLM_PROVIDER": "deepseek",
+                "TRADINGAGENTS_DEEP_THINK_LLM": "deepseek-reasoner",
+                "TRADINGAGENTS_QUICK_THINK_LLM": "deepseek-chat",
+                "TRADINGAGENTS_OUTPUT_LANGUAGE": "English",
+            }, clear=False), \
+             mock.patch.object(m, "DEFAULT_CONFIG", fake_cfg), \
+             mock.patch.object(m, "fetch_announcements", return_value=None), \
+             mock.patch.object(m, "display_announcements"), \
+             mock.patch.object(m, "get_ticker", return_value="VCB.VN"), \
+             mock.patch.object(m, "ensure_vnstock_api_key_for_symbol") as ensure_vnstock_key, \
+             mock.patch.object(m, "get_analysis_date", return_value="2026-05-29"), \
+             mock.patch.object(m, "select_analysts", return_value=[]), \
+             mock.patch.object(m, "select_research_depth", return_value=1), \
+             mock.patch.object(m, "ensure_api_key"), \
+             mock.patch.object(m, "select_llm_provider"), \
+             mock.patch.object(m, "ask_output_language"), \
+             mock.patch.object(m, "select_shallow_thinking_agent"), \
+             mock.patch.object(m, "select_deep_thinking_agent"):
+            m.get_user_selections()
+
+        ensure_vnstock_key.assert_called_once_with("VCB.VN")
 
 
 if __name__ == "__main__":

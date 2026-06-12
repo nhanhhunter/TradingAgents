@@ -512,6 +512,7 @@ def get_user_selections():
     )
     selected_ticker = get_ticker()
     asset_type = detect_asset_type(selected_ticker)
+    ensure_vnstock_api_key_for_symbol(selected_ticker)
     # Only announce when it's not the default stock path, to avoid printing
     # "stock" on every run.
     if asset_type.value != "stock":

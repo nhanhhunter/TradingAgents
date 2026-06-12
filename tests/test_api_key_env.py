@@ -105,7 +105,8 @@ def test_ensure_api_key_prompts_and_writes_to_env(monkeypatch, tmp_path, cli_uti
     monkeypatch.chdir(tmp_path)
 
     fake_prompt = type("P", (), {"ask": staticmethod(lambda: "sk-deepseek-test")})()
-    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt):
+    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt), \
+         patch.object(cli_utils, "find_dotenv", return_value=""):
         result = cli_utils.ensure_api_key("deepseek")
 
     assert result == "sk-deepseek-test"
@@ -149,3 +150,37 @@ def test_ensure_api_key_updates_existing_env_file(monkeypatch, tmp_path, cli_uti
     assert "OPENAI_API_KEY" in content and "sk-existing" in content
     assert "OTHER=value" in content
     assert "OPENROUTER_API_KEY" in content and "sk-openrouter-new" in content
+
+
+def test_ensure_vnstock_api_key_for_vietnam_symbol_prompts_and_writes(
+    monkeypatch, tmp_path, cli_utils
+):
+    """First Vietnam-market run should ask for VNSTOCK_API_KEY and persist it."""
+    monkeypatch.delenv("VNSTOCK_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+    key_path = tmp_path / ".vnstock" / "api_key.json"
+
+    fake_prompt = type("P", (), {"ask": staticmethod(lambda: "vnstock-test")})()
+    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt), \
+         patch.object(cli_utils, "find_dotenv", return_value=""), \
+         patch.object(cli_utils, "VNSTOCK_API_KEY_PATH", key_path):
+        result = cli_utils.ensure_vnstock_api_key_for_symbol("VCB.VN")
+
+    assert result == "vnstock-test"
+    assert os.environ["VNSTOCK_API_KEY"] == "vnstock-test"
+    content = (tmp_path / ".env").read_text()
+    assert "VNSTOCK_API_KEY" in content
+    assert "vnstock-test" in content
+
+
+def test_ensure_vnstock_api_key_skips_non_vietnam_symbols(
+    monkeypatch, tmp_path, cli_utils
+):
+    monkeypatch.delenv("VNSTOCK_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    with patch.object(cli_utils.questionary, "password") as prompt:
+        result = cli_utils.ensure_vnstock_api_key_for_symbol("AAPL")
+
+    assert result is None
+    prompt.assert_not_called()

@@ -7,10 +7,12 @@ from dotenv import find_dotenv, set_key
 from rich.console import Console
 
 from cli.models import AnalystType, AssetType
+from tradingagents.dataflows.vietnam_symbols import is_vietnam_symbol
 from tradingagents.llm_clients.api_key_env import get_api_key_env
 from tradingagents.llm_clients.model_catalog import get_model_options
 
 console = Console()
+VNSTOCK_API_KEY_PATH = Path.home() / ".vnstock" / "api_key.json"
 
 TICKER_INPUT_EXAMPLES = "SPY, 0700.HK, BTC-USD"
 
@@ -542,6 +544,47 @@ def ensure_api_key(provider: str) -> Optional[str]:
     set_key(env_path, env_var, key)
     os.environ[env_var] = key
     console.print(f"[green]Saved {env_var} to {env_path}[/green]")
+    return key
+
+
+def ensure_vnstock_api_key_for_symbol(symbol: str) -> Optional[str]:
+    """Prompt for VNSTOCK_API_KEY on first Vietnam-market use.
+
+    VNstock itself owns registration into ``~/.vnstock/api_key.json`` when
+    market data is fetched. The CLI only collects and persists the key early so
+    a first-run Vietnam analysis does not fall through to guest-tier access.
+    """
+    if not is_vietnam_symbol(symbol):
+        return None
+
+    existing = os.environ.get("VNSTOCK_API_KEY")
+    if existing:
+        return existing
+
+    if VNSTOCK_API_KEY_PATH.exists():
+        return None
+
+    console.print(
+        "\n[yellow]VNSTOCK_API_KEY is not set. Vietnam-market data uses VNstock.[/yellow]"
+    )
+    key = questionary.password(
+        "Paste your VNSTOCK_API_KEY (will be saved to .env; press Enter to skip):",
+        style=questionary.Style([
+            ("text", "fg:cyan"),
+            ("highlighted", "noinherit"),
+        ]),
+    ).ask()
+    if not key:
+        console.print(
+            "[yellow]Skipped VNSTOCK_API_KEY. VNstock may use guest-tier access.[/yellow]"
+        )
+        return None
+
+    env_path = find_dotenv(usecwd=True) or str(Path.cwd() / ".env")
+    Path(env_path).touch(exist_ok=True)
+    set_key(env_path, "VNSTOCK_API_KEY", key)
+    os.environ["VNSTOCK_API_KEY"] = key
+    console.print(f"[green]Saved VNSTOCK_API_KEY to {env_path}[/green]")
     return key
 
 

@@ -105,19 +105,64 @@ Our framework decomposes complex trading tasks into specialized roles.
 
 Clone TradingAgents:
 ```bash
-git clone https://github.com/TauricResearch/TradingAgents.git
+git clone https://github.com/nhanhhunter/TradingAgents.git
 cd TradingAgents
 ```
 
-Create a virtual environment in any of your favorite environment managers:
+Use Python 3.10 or newer. Python 3.11+ is recommended.
+
+#### macOS / Linux
+
+Create and activate a virtual environment:
 ```bash
-conda create -n tradingagents python=3.13
-conda activate tradingagents
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 Install the package and its dependencies:
 ```bash
-pip install .
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
+
+Run the CLI:
+```bash
+tradingagents
+```
+
+If your shell cannot find the command after installation:
+```bash
+python -m cli.main
+```
+
+#### Windows PowerShell
+
+Create and activate a virtual environment:
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the package and its dependencies:
+```powershell
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
+
+Run the CLI:
+```powershell
+tradingagents
+```
+
+If PowerShell blocks virtualenv activation, allow scripts for the current user
+and reopen PowerShell:
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+If `tradingagents` is not on PATH:
+```powershell
+.\.venv\Scripts\python.exe -m cli.main
 ```
 
 ### Docker
@@ -133,38 +178,61 @@ For local models with Ollama:
 docker compose --profile ollama run --rm tradingagents-ollama
 ```
 
-### Required APIs
+### API keys on first run
 
-TradingAgents supports multiple LLM providers. Set the API key for your chosen provider:
+You do not need to put API keys in `.env.example`. On the first interactive
+run, TradingAgents asks for the API key that matches the LLM provider you
+select, saves it to the project `.env`, and uses it immediately for that run.
 
-```bash
-export OPENAI_API_KEY=...          # OpenAI (GPT)
-export GOOGLE_API_KEY=...          # Google (Gemini)
-export ANTHROPIC_API_KEY=...       # Anthropic (Claude)
-export XAI_API_KEY=...             # xAI (Grok)
-export DEEPSEEK_API_KEY=...        # DeepSeek
-export DASHSCOPE_API_KEY=...       # Qwen — International (dashscope-intl.aliyuncs.com)
-export DASHSCOPE_CN_API_KEY=...    # Qwen — China (dashscope.aliyuncs.com)
-export ZHIPU_API_KEY=...           # GLM via Z.AI (international)
-export ZHIPU_CN_API_KEY=...        # GLM via BigModel (China, open.bigmodel.cn)
-export MINIMAX_API_KEY=...         # MiniMax — Global (api.minimax.io, M2.x, 204K ctx)
-export MINIMAX_CN_API_KEY=...      # MiniMax — China (api.minimaxi.com, M2.x, 204K ctx)
-export MIMO_API_KEY=...            # Xiaomi Mimo (OpenAI-compatible)
-# Add 9ROUTER_API_KEY=... to .env for 9router; shell export support for
-# digit-leading variable names varies by shell.
-export OPENROUTER_API_KEY=...      # OpenRouter
-export ALPHA_VANTAGE_API_KEY=...   # Alpha Vantage
-export VNSTOCK_API_KEY=...         # Optional bootstrap for ~/.vnstock/api_key.json
-```
+Supported provider keys:
 
-For enterprise providers (e.g. Azure OpenAI, AWS Bedrock), copy `.env.enterprise.example` to `.env.enterprise` and fill in your credentials.
+| Provider | Saved env var |
+| --- | --- |
+| OpenAI | `OPENAI_API_KEY` |
+| Google Gemini | `GOOGLE_API_KEY` |
+| Anthropic Claude | `ANTHROPIC_API_KEY` |
+| xAI Grok | `XAI_API_KEY` |
+| DeepSeek | `DEEPSEEK_API_KEY` |
+| Qwen International | `DASHSCOPE_API_KEY` |
+| Qwen China | `DASHSCOPE_CN_API_KEY` |
+| GLM / Z.AI | `ZHIPU_API_KEY` |
+| GLM China / BigModel | `ZHIPU_CN_API_KEY` |
+| MiniMax Global | `MINIMAX_API_KEY` |
+| MiniMax China | `MINIMAX_CN_API_KEY` |
+| Xiaomi Mimo | `MIMO_API_KEY` |
+| 9router | `9ROUTER_API_KEY` |
+| OpenRouter | `OPENROUTER_API_KEY` |
+| Azure OpenAI | `AZURE_OPENAI_API_KEY` |
 
-For local models, configure Ollama with `llm_provider: "ollama"`. The default endpoint is `http://localhost:11434/v1`; set `OLLAMA_BASE_URL` to point at a remote `ollama-serve`. Pull models with `ollama pull <name>`, and pick "Custom model ID" in the CLI for any model not listed by default.
+For Vietnamese tickers such as `VCB.VN` or `VNINDEX`, the CLI also asks for
+`VNSTOCK_API_KEY` on first use when no VNstock credential file already exists.
+The key is saved to `.env`; VNstock later bootstraps its own
+`~/.vnstock/api_key.json` file when market data is fetched.
 
-Alternatively, copy `.env.example` to `.env` and fill in your keys:
+Manual `.env` setup is optional. Use it when you want unattended runs or want
+to prepare keys before launching the CLI:
+
 ```bash
 cp .env.example .env
 ```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then edit `.env` and fill only the providers you use. For `9ROUTER_API_KEY`,
+prefer `.env` because some shells do not support exporting variable names that
+start with a digit.
+
+For enterprise providers (e.g. Azure OpenAI, AWS Bedrock), copy
+`.env.enterprise.example` to `.env.enterprise` and fill in your credentials.
+
+For local models, configure Ollama with `llm_provider: "ollama"`. The default
+endpoint is `http://localhost:11434/v1`; set `OLLAMA_BASE_URL` to point at a
+remote `ollama-serve`. Pull models with `ollama pull <name>`, and pick "Custom
+model ID" in the CLI for any model not listed by default.
 
 ### CLI Usage
 
@@ -309,3 +377,4 @@ Please reference our work if you find *TradingAgents* provides you with some hel
       url={https://arxiv.org/abs/2412.20138}, 
 }
 ```
+
