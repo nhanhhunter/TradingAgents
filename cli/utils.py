@@ -112,16 +112,32 @@ def get_analysis_date() -> str:
     return date.strip()
 
 
-def select_analysts(asset_type: AssetType = AssetType.STOCK) -> List[AnalystType]:
-    """Select analysts using an interactive checkbox."""
+def select_analysts(
+    asset_type: AssetType = AssetType.STOCK,
+    default_analysts: list[str] | None = None,
+) -> List[AnalystType]:
+    """Select analysts, prechecking prior values valid for the asset type."""
     available_analysts = filter_analysts_for_asset_type(
         [value for _, value in ANALYST_ORDER],
         asset_type,
     )
+    valid_default_values = {
+        analyst.value
+        for analyst in available_analysts
+    }
+    checked_values = {
+        value
+        for value in (default_analysts or [])
+        if value in valid_default_values
+    }
     choices = questionary.checkbox(
         "Select Your [Analysts Team]:",
         choices=[
-            questionary.Choice(display, value=value)
+            questionary.Choice(
+                display,
+                value=value,
+                checked=value.value in checked_values,
+            )
             for display, value in ANALYST_ORDER
             if value in available_analysts
         ],
@@ -270,6 +286,87 @@ def select_deep_thinking_agent(provider) -> str:
     """Select deep thinking llm engine using an interactive selection."""
     return _select_model(provider, "deep")
 
+
+def _reusable_model_label(provider: str, mode: str, model: object) -> str | None:
+    """Return a current label when a prior model is reusable in this mode."""
+    if not isinstance(model, str) or not model.strip():
+        return None
+
+    model_id = model.strip()
+    provider_key = provider.lower()
+    if provider_key in {"openrouter", "azure"}:
+        return model_id
+
+    try:
+        options = get_model_options(provider_key, mode)
+    except KeyError:
+        return None
+
+    catalog_labels = {
+        value: display
+        for display, value in options
+        if value != "custom"
+    }
+    if model_id in catalog_labels:
+        return catalog_labels[model_id].split(" - ", 1)[0]
+    if any(value == "custom" for _, value in options):
+        return model_id
+    return None
+
+
+def select_thinking_agents(
+    provider: str,
+    *,
+    previous_provider: str | None = None,
+    previous_quick: str | None = None,
+    previous_deep: str | None = None,
+) -> tuple[str, str]:
+    """Reuse a valid provider-owned model pair or run both selectors."""
+    provider_key = provider.lower()
+    previous_key = (
+        previous_provider.strip().lower()
+        if isinstance(previous_provider, str)
+        else None
+    )
+    quick_label = _reusable_model_label(
+        provider_key,
+        "quick",
+        previous_quick,
+    )
+    deep_label = _reusable_model_label(
+        provider_key,
+        "deep",
+        previous_deep,
+    )
+
+    if previous_key == provider_key and quick_label and deep_label:
+        action = questionary.select(
+            "Select your Thinking Agents:",
+            choices=[
+                questionary.Choice(
+                    f"Use previous: Quick={quick_label}; Deep={deep_label}",
+                    "reuse",
+                ),
+                questionary.Choice("Reselect", "reselect"),
+            ],
+            instruction="\n- Use arrow keys to navigate\n- Press Enter to select",
+            style=questionary.Style(
+                [
+                    ("selected", "fg:magenta noinherit"),
+                    ("highlighted", "fg:magenta noinherit"),
+                    ("pointer", "fg:magenta noinherit"),
+                ]
+            ),
+        ).ask()
+        if action == "reuse":
+            return previous_quick.strip(), previous_deep.strip()
+
+    return (
+        select_shallow_thinking_agent(provider_key),
+        select_deep_thinking_agent(provider_key),
+    )
+
+
 def _llm_provider_table() -> list[tuple[str, str, str | None]]:
     """(display_name, provider_key, base_url) for every supported provider.
 
@@ -295,6 +392,68 @@ def _llm_provider_table() -> list[tuple[str, str, str | None]]:
         ("Azure OpenAI", "azure", None),
         ("Ollama", "ollama", ollama_url),
     ]
+
+
+def _previous_provider_lookup() -> dict[str, tuple[str, str | None]]:
+    """Map final canonical provider keys to current display names and URLs."""
+    lookup = {
+        provider_key: (display, url)
+        for display, provider_key, url in _llm_provider_table()
+    }
+    lookup.update(
+        {
+            "glm": (
+                "GLM / Z.AI (International)",
+                "https://api.z.ai/api/paas/v4/",
+            ),
+            "qwen-cn": (
+                "Qwen (China)",
+                "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            ),
+            "glm-cn": (
+                "GLM / BigModel (China)",
+                "https://open.bigmodel.cn/api/paas/v4/",
+            ),
+            "minimax-cn": (
+                "MiniMax (China)",
+                "https://api.minimaxi.com/v1",
+            ),
+        }
+    )
+    return lookup
+
+
+def select_previous_llm_provider(
+    previous_provider: object,
+) -> tuple[str, str | None] | None:
+    """Offer reuse for a known canonical provider key."""
+    if not isinstance(previous_provider, str):
+        return None
+
+    provider_key = previous_provider.strip().lower()
+    provider = _previous_provider_lookup().get(provider_key)
+    if provider is None:
+        return None
+
+    display, url = provider
+    action = questionary.select(
+        "Select your LLM Provider:",
+        choices=[
+            questionary.Choice(f"Use previous: {display}", "reuse"),
+            questionary.Choice("Reselect", "reselect"),
+        ],
+        instruction="\n- Use arrow keys to navigate\n- Press Enter to select",
+        style=questionary.Style(
+            [
+                ("selected", "fg:magenta noinherit"),
+                ("highlighted", "fg:magenta noinherit"),
+                ("pointer", "fg:magenta noinherit"),
+            ]
+        ),
+    ).ask()
+    if action == "reuse":
+        return provider_key, url
+    return None
 
 
 def provider_default_url(provider_key: str) -> str | None:
@@ -588,8 +747,8 @@ def ensure_vnstock_api_key_for_symbol(symbol: str) -> Optional[str]:
     return key
 
 
-def ask_output_language() -> str:
-    """Ask for report output language."""
+def _ask_output_language_full() -> str:
+    """Run the full output-language selector."""
     choice = questionary.select(
         "Select Output Language:",
         choices=[
@@ -620,3 +779,25 @@ def ask_output_language() -> str:
         ).ask().strip()
 
     return choice
+
+
+def ask_output_language(previous_language: str | None = None) -> str:
+    """Ask for report output language, optionally reusing the prior value."""
+    if isinstance(previous_language, str) and previous_language.strip():
+        previous = previous_language.strip()
+        action = questionary.select(
+            "Select Output Language:",
+            choices=[
+                questionary.Choice(f"Use previous: {previous}", "reuse"),
+                questionary.Choice("Reselect", "reselect"),
+            ],
+            style=questionary.Style([
+                ("selected", "fg:yellow noinherit"),
+                ("highlighted", "fg:yellow noinherit"),
+                ("pointer", "fg:yellow noinherit"),
+            ]),
+        ).ask()
+        if action == "reuse":
+            return previous
+
+    return _ask_output_language_full()
