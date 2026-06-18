@@ -241,6 +241,21 @@ Launch the interactive CLI:
 tradingagents          # installed command
 python -m cli.main     # alternative: run directly from source
 ```
+
+### Reusing recent CLI selections
+
+Interactive runs remember the latest Output Language, LLM provider, and
+Quick/Deep Thinking Agent pair, then offer `Use previous` or `Reselect` for
+each valid saved selection. The Analysts Team checkbox always appears, with
+previously selected valid analysts checked by default.
+
+These preferences are stored in `~/.tradingagents/cli_preferences.json`. The
+file does not store API keys, backend URLs, ticker symbols, or analysis dates.
+
+`TRADINGAGENTS_*` environment variables remain authoritative.
+Environment-controlled fields are excluded from preference updates, so their
+prior interactive values remain unchanged.
+
 You will see a screen where you can select your desired tickers, analysis date, LLM provider, research depth, and more.
 
 ### Markets and tickers
