@@ -1,0 +1,1 @@
+{"version": 1, "output_language": " Vietnamese ", "analysts": ["market", "social", "market", "unknown", 123, ""], "llm_provider": " mimo ", "thinking_provider": "mimo", "quick_think_llm": " mimo-v2.5 ", "deep_think_llm": "mimo-v2.5-pro", "api_key": "must-not-load", "backend_url": "https://secret.invalid", "ticker": "AAPL"}

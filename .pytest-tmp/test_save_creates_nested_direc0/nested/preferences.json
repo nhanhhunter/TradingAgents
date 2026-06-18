@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "output_language": "Vietnamese",
+  "llm_provider": "mimo",
+  "thinking_provider": "mimo",
+  "quick_think_llm": "mimo-v2.5",
+  "deep_think_llm": "mimo-v2.5-pro",
+  "analysts": [
+    "market",
+    "social"
+  ]
+}
