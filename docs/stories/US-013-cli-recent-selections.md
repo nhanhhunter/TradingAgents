@@ -2,7 +2,7 @@
 
 ## Status
 
-in_progress
+implemented
 
 ## Lane
 
@@ -73,5 +73,29 @@ matrix, and trace records cannot be created or updated.
 - Approved design:
   `docs/superpowers/specs/2026-06-18-cli-recent-selections-design.md`.
 - Design commit: `38eb25c`.
-- Implementation and validation evidence will be appended as later tasks
-  complete.
+- Observed TDD RED evidence during implementation:
+  - Task 2: loader import initially failed with `ModuleNotFoundError`, then the
+    save function was missing.
+  - Task 3: the old prompt signatures did not accept prior selections and the
+    required helper functions were missing.
+  - Task 4: `main` did not call `load_cli_preferences`.
+- Fresh final validation:
+  - `python -m pytest tests/test_cli_preferences.py tests/test_cli_recent_selections.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    - `43 passed in 1.45s`
+  - `python -m pytest tests/test_cli_env_skip.py tests/test_api_key_env.py tests/test_ollama_base_url.py tests/test_model_validation.py tests/test_crypto_asset_mode.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    - `56 passed in 1.96s`
+  - `python -m cli.main --help`
+    - Exit 0; displayed the CLI usage and options.
+  - `env DEEPSEEK_API_KEY=placeholder python -m pytest -q --basetemp .pytest-tmp -p no:cacheprovider`
+    - `384 passed, 1 skipped, 7 warnings in 8.50s`
+    - Skip: `tests/test_deepseek_reasoning.py:210` skipped the live API call
+      because `DEEPSEEK_API_KEY` was unset or a placeholder.
+    - Warnings: seven expected `RuntimeWarning` entries from
+      `tests/test_anthropic_effort.py` for intentionally unknown Anthropic
+      model names.
+  - `git diff --check`
+    - Exit 0 with no output.
+  - `git status --short`
+    - Before this story update, reported only untracked `.pytest-tmp/`.
+- `scripts/bin/harness-cli` is absent in this checkout, so durable story,
+  matrix, and trace rows were not updated.
