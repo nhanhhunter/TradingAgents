@@ -1,3 +1,4 @@
+from contextlib import ExitStack
 from unittest import mock
 
 import pytest
@@ -13,6 +14,7 @@ def _clear_cli_selection_env(monkeypatch):
     for name in (
         "TRADINGAGENTS_OUTPUT_LANGUAGE",
         "TRADINGAGENTS_LLM_PROVIDER",
+        "TRADINGAGENTS_LLM_BACKEND_URL",
         "TRADINGAGENTS_QUICK_THINK_LLM",
         "TRADINGAGENTS_DEEP_THINK_LLM",
     ):
@@ -25,6 +27,277 @@ class Answer:
 
     def ask(self):
         return self.value
+
+
+@pytest.fixture
+def cli_questionnaire():
+    from cli import main
+
+    def run(
+        *,
+        preferences=None,
+        save_result=True,
+        provider=("deepseek", "https://api.deepseek.com"),
+        previous_provider_result=None,
+        analysts=None,
+        output_language="English",
+        thinking_agents=("deepseek-chat", "deepseek-reasoner"),
+    ):
+        selected_analysts = (
+            [AnalystType.MARKET, AnalystType.NEWS]
+            if analysts is None
+            else analysts
+        )
+        patches = {
+            "load": mock.patch.object(
+                main,
+                "load_cli_preferences",
+                return_value={} if preferences is None else preferences,
+            ),
+            "save": mock.patch.object(
+                main,
+                "save_cli_preferences",
+                return_value=save_result,
+            ),
+            "fetch_announcements": mock.patch.object(
+                main,
+                "fetch_announcements",
+                return_value=None,
+            ),
+            "display_announcements": mock.patch.object(
+                main,
+                "display_announcements",
+            ),
+            "get_ticker": mock.patch.object(
+                main,
+                "get_ticker",
+                return_value="AAPL",
+            ),
+            "detect_asset_type": mock.patch.object(
+                main,
+                "detect_asset_type",
+                return_value=AssetType.STOCK,
+            ),
+            "ensure_vnstock": mock.patch.object(
+                main,
+                "ensure_vnstock_api_key_for_symbol",
+            ),
+            "get_analysis_date": mock.patch.object(
+                main,
+                "get_analysis_date",
+                return_value="2026-06-18",
+            ),
+            "ask_output_language": mock.patch.object(
+                main,
+                "ask_output_language",
+                return_value=output_language,
+            ),
+            "select_analysts": mock.patch.object(
+                main,
+                "select_analysts",
+                return_value=selected_analysts,
+            ),
+            "select_research_depth": mock.patch.object(
+                main,
+                "select_research_depth",
+                return_value=2,
+            ),
+            "select_previous_provider": mock.patch.object(
+                main,
+                "select_previous_llm_provider",
+                return_value=previous_provider_result,
+            ),
+            "select_provider": mock.patch.object(
+                main,
+                "select_llm_provider",
+                return_value=provider,
+            ),
+            "select_thinking_agents": mock.patch.object(
+                main,
+                "select_thinking_agents",
+                return_value=thinking_agents,
+            ),
+            "ask_qwen_region": mock.patch.object(
+                main,
+                "ask_qwen_region",
+            ),
+            "ask_gemini_thinking_config": mock.patch.object(
+                main,
+                "ask_gemini_thinking_config",
+            ),
+            "ask_openai_reasoning_effort": mock.patch.object(
+                main,
+                "ask_openai_reasoning_effort",
+            ),
+            "ask_anthropic_effort": mock.patch.object(
+                main,
+                "ask_anthropic_effort",
+            ),
+            "ensure_api_key": mock.patch.object(main, "ensure_api_key"),
+        }
+        with ExitStack() as stack:
+            started = {
+                name: stack.enter_context(patcher)
+                for name, patcher in patches.items()
+            }
+            selections = main.get_user_selections()
+        return selections, started
+
+    return run
+
+
+def test_first_run_orchestrates_preferences_and_saves_sparse_fields(
+    cli_questionnaire,
+):
+    selections, calls = cli_questionnaire()
+
+    calls["load"].assert_called_once_with()
+    calls["ask_output_language"].assert_called_once_with(None)
+    calls["select_analysts"].assert_called_once_with(
+        AssetType.STOCK,
+        default_analysts=None,
+    )
+    calls["select_previous_provider"].assert_called_once_with(None)
+    calls["select_provider"].assert_called_once_with()
+    calls["select_thinking_agents"].assert_called_once_with(
+        "deepseek",
+        previous_provider=None,
+        previous_quick=None,
+        previous_deep=None,
+    )
+    calls["save"].assert_called_once_with(
+        {
+            "analysts": ["market", "news"],
+            "output_language": "English",
+            "llm_provider": "deepseek",
+            "thinking_provider": "deepseek",
+            "quick_think_llm": "deepseek-chat",
+            "deep_think_llm": "deepseek-reasoner",
+        }
+    )
+    assert selections == {
+        "ticker": "AAPL",
+        "asset_type": "stock",
+        "analysis_date": "2026-06-18",
+        "analysts": [AnalystType.MARKET, AnalystType.NEWS],
+        "research_depth": 2,
+        "llm_provider": "deepseek",
+        "backend_url": "https://api.deepseek.com",
+        "shallow_thinker": "deepseek-chat",
+        "deep_thinker": "deepseek-reasoner",
+        "google_thinking_level": None,
+        "openai_reasoning_effort": None,
+        "anthropic_effort": None,
+        "output_language": "English",
+    }
+
+
+def test_prior_regional_provider_reuse_skips_full_picker_and_region(
+    cli_questionnaire,
+):
+    preferences = {
+        "output_language": "Vietnamese",
+        "analysts": ["social", "news"],
+        "llm_provider": "qwen-cn",
+        "thinking_provider": "qwen-cn",
+        "quick_think_llm": "qwen-plus",
+        "deep_think_llm": "qwen-max",
+    }
+    selections, calls = cli_questionnaire(
+        preferences=preferences,
+        previous_provider_result=(
+            "qwen-cn",
+            "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        ),
+        analysts=[AnalystType.SOCIAL, AnalystType.NEWS],
+        output_language="Vietnamese",
+        thinking_agents=("qwen-plus", "qwen-max"),
+    )
+
+    calls["ask_output_language"].assert_called_once_with("Vietnamese")
+    calls["select_analysts"].assert_called_once_with(
+        AssetType.STOCK,
+        default_analysts=["social", "news"],
+    )
+    calls["select_previous_provider"].assert_called_once_with("qwen-cn")
+    calls["select_provider"].assert_not_called()
+    calls["ask_qwen_region"].assert_not_called()
+    calls["select_thinking_agents"].assert_called_once_with(
+        "qwen-cn",
+        previous_provider="qwen-cn",
+        previous_quick="qwen-plus",
+        previous_deep="qwen-max",
+    )
+    calls["ensure_api_key"].assert_called_once_with("qwen-cn")
+    assert selections["llm_provider"] == "qwen-cn"
+    assert selections["backend_url"] == (
+        "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    )
+
+
+def test_save_failure_warns_but_returns_current_selections(
+    cli_questionnaire,
+    capsys,
+):
+    selections, calls = cli_questionnaire(save_result=False)
+
+    calls["save"].assert_called_once()
+    assert selections["ticker"] == "AAPL"
+    assert selections["llm_provider"] == "deepseek"
+    assert "Warning: Could not save recent CLI selections." in capsys.readouterr().out
+
+
+def test_env_provider_and_language_with_interactive_models_saves_pair_owner_only(
+    cli_questionnaire,
+    monkeypatch,
+):
+    from cli import main
+
+    fake_config = dict(main.DEFAULT_CONFIG)
+    fake_config.update(
+        {
+            "llm_provider": "openai",
+            "backend_url": "https://api.openai.com/v1",
+            "output_language": "Japanese",
+        }
+    )
+    monkeypatch.setattr(main, "DEFAULT_CONFIG", fake_config)
+    monkeypatch.setenv("TRADINGAGENTS_LLM_PROVIDER", "openai")
+    monkeypatch.setenv("TRADINGAGENTS_OUTPUT_LANGUAGE", "Japanese")
+
+    selections, calls = cli_questionnaire(
+        preferences={
+            "output_language": "Vietnamese",
+            "llm_provider": "qwen-cn",
+            "thinking_provider": "openai",
+            "quick_think_llm": "gpt-5.4-mini",
+            "deep_think_llm": "gpt-5.5",
+        },
+        thinking_agents=("gpt-5.4-mini", "gpt-5.5"),
+    )
+
+    calls["ask_output_language"].assert_not_called()
+    calls["select_previous_provider"].assert_not_called()
+    calls["select_provider"].assert_not_called()
+    calls["select_thinking_agents"].assert_called_once_with(
+        "openai",
+        previous_provider="openai",
+        previous_quick="gpt-5.4-mini",
+        previous_deep="gpt-5.5",
+    )
+    calls["ask_openai_reasoning_effort"].assert_not_called()
+    calls["save"].assert_called_once_with(
+        {
+            "analysts": ["market", "news"],
+            "thinking_provider": "openai",
+            "quick_think_llm": "gpt-5.4-mini",
+            "deep_think_llm": "gpt-5.5",
+        }
+    )
+    assert selections["output_language"] == "Japanese"
+    assert selections["llm_provider"] == "openai"
+    assert selections["shallow_thinker"] == "gpt-5.4-mini"
+    assert selections["deep_thinker"] == "gpt-5.5"
 
 
 def test_language_reuses_trimmed_previous_with_exact_choices():

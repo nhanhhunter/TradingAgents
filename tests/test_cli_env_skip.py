@@ -62,18 +62,26 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
              mock.patch.object(m, "get_analysis_date", return_value="2026-05-29"), \
              mock.patch.object(m, "select_analysts", return_value=[]), \
              mock.patch.object(m, "select_research_depth", return_value=1), \
+             mock.patch.object(m, "load_cli_preferences", return_value={}) as load_preferences, \
+             mock.patch.object(m, "save_cli_preferences", return_value=True) as save_preferences, \
              mock.patch.object(m, "ensure_api_key") as ensure_key, \
+             mock.patch.object(m, "select_previous_llm_provider") as prompt_previous_provider, \
              mock.patch.object(m, "select_llm_provider") as prompt_provider, \
              mock.patch.object(m, "ask_output_language") as prompt_lang, \
+             mock.patch.object(m, "select_thinking_agents") as prompt_thinking_pair, \
              mock.patch.object(m, "select_shallow_thinking_agent") as prompt_quick, \
              mock.patch.object(m, "select_deep_thinking_agent") as prompt_deep:
             sel = m.get_user_selections()
 
         # None of the LLM selection prompts should have been shown.
+        load_preferences.assert_called_once_with()
+        prompt_previous_provider.assert_not_called()
         prompt_provider.assert_not_called()
         prompt_lang.assert_not_called()
+        prompt_thinking_pair.assert_not_called()
         prompt_quick.assert_not_called()
         prompt_deep.assert_not_called()
+        save_preferences.assert_called_once_with({"analysts": []})
         # API key is still verified for the env-configured provider.
         ensure_key.assert_called_once()
         ensure_vnstock_key.assert_called_once_with("AAPL")
@@ -111,9 +119,13 @@ class TestCliSkipsPromptsFromEnv(unittest.TestCase):
              mock.patch.object(m, "get_analysis_date", return_value="2026-05-29"), \
              mock.patch.object(m, "select_analysts", return_value=[]), \
              mock.patch.object(m, "select_research_depth", return_value=1), \
+             mock.patch.object(m, "load_cli_preferences", return_value={}), \
+             mock.patch.object(m, "save_cli_preferences", return_value=True), \
              mock.patch.object(m, "ensure_api_key"), \
+             mock.patch.object(m, "select_previous_llm_provider"), \
              mock.patch.object(m, "select_llm_provider"), \
              mock.patch.object(m, "ask_output_language"), \
+             mock.patch.object(m, "select_thinking_agents"), \
              mock.patch.object(m, "select_shallow_thinking_agent"), \
              mock.patch.object(m, "select_deep_thinking_agent"):
             m.get_user_selections()

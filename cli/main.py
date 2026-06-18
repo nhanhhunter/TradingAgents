@@ -29,7 +29,8 @@ from tradingagents.graph.analyst_execution import (
     sync_analyst_tracker_from_chunk,
 )
 from tradingagents.default_config import DEFAULT_CONFIG
-from cli.models import AnalystType
+from cli.models import AnalystType, AssetType
+from cli.preferences import load_cli_preferences, save_cli_preferences
 from cli.utils import *
 from cli.announcements import fetch_announcements, display_announcements
 from cli.stats_handler import StatsCallbackHandler
@@ -465,6 +466,18 @@ def update_display(layout, spinner_text=None, stats_handler=None, start_time=Non
 
 def get_user_selections():
     """Get all user selections before starting the analysis display."""
+    preferences = load_cli_preferences()
+    language_from_env = bool(
+        os.environ.get("TRADINGAGENTS_OUTPUT_LANGUAGE")
+    )
+    provider_from_env = bool(
+        os.environ.get("TRADINGAGENTS_LLM_PROVIDER")
+    )
+    models_from_env = bool(
+        os.environ.get("TRADINGAGENTS_QUICK_THINK_LLM")
+        or os.environ.get("TRADINGAGENTS_DEEP_THINK_LLM")
+    )
+
     # Display ASCII art welcome message
     with open(Path(__file__).parent / "static" / "welcome.txt", "r", encoding="utf-8") as f:
         welcome_ascii = f.read()
@@ -532,7 +545,7 @@ def get_user_selections():
     analysis_date = get_analysis_date()
 
     # Step 3: Output language (skipped when set via TRADINGAGENTS_OUTPUT_LANGUAGE)
-    if os.environ.get("TRADINGAGENTS_OUTPUT_LANGUAGE"):
+    if language_from_env:
         output_language = DEFAULT_CONFIG["output_language"]
         console.print(
             f"[green]✓ Output language from environment:[/green] {output_language}"
@@ -544,7 +557,9 @@ def get_user_selections():
                 "Select the language for analyst reports and final decision"
             )
         )
-        output_language = ask_output_language()
+        output_language = ask_output_language(
+            preferences.get("output_language")
+        )
 
     # Step 4: Select analysts
     console.print(
@@ -552,7 +567,10 @@ def get_user_selections():
             "Step 4: Analysts Team", "Select your LLM analyst agents for the analysis"
         )
     )
-    selected_analysts = select_analysts(asset_type)
+    selected_analysts = select_analysts(
+        asset_type,
+        default_analysts=preferences.get("analysts"),
+    )
     console.print(
         f"[green]Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}"
     )
@@ -569,7 +587,6 @@ def get_user_selections():
     # The backend URL comes from TRADINGAGENTS_LLM_BACKEND_URL when set,
     # otherwise the provider's default endpoint — the same value the menu
     # would have picked.
-    provider_from_env = bool(os.environ.get("TRADINGAGENTS_LLM_PROVIDER"))
     if provider_from_env:
         selected_llm_provider = DEFAULT_CONFIG["llm_provider"].lower()
         backend_url = DEFAULT_CONFIG["backend_url"] or provider_default_url(selected_llm_provider)
@@ -583,17 +600,23 @@ def get_user_selections():
                 "Step 6: LLM Provider", "Select your LLM provider"
             )
         )
-        selected_llm_provider, backend_url = select_llm_provider()
+        previous_provider = select_previous_llm_provider(
+            preferences.get("llm_provider")
+        )
+        if previous_provider is not None:
+            selected_llm_provider, backend_url = previous_provider
+        else:
+            selected_llm_provider, backend_url = select_llm_provider()
 
-        # Providers with regional endpoints prompt for the region as a secondary
-        # step so the main dropdown stays clean (mainland China and international
-        # accounts cannot share API keys).
-        if selected_llm_provider == "qwen":
-            selected_llm_provider, backend_url = ask_qwen_region()
-        elif selected_llm_provider == "minimax":
-            selected_llm_provider, backend_url = ask_minimax_region()
-        elif selected_llm_provider == "glm":
-            selected_llm_provider, backend_url = ask_glm_region()
+            # Providers with regional endpoints prompt for the region as a
+            # secondary step so the main dropdown stays clean (mainland China
+            # and international accounts cannot share API keys).
+            if selected_llm_provider == "qwen":
+                selected_llm_provider, backend_url = ask_qwen_region()
+            elif selected_llm_provider == "minimax":
+                selected_llm_provider, backend_url = ask_minimax_region()
+            elif selected_llm_provider == "glm":
+                selected_llm_provider, backend_url = ask_glm_region()
 
         # For Ollama, surface the resolved endpoint (OLLAMA_BASE_URL vs default)
         # before model selection so it's obvious where we're connecting.
@@ -606,7 +629,7 @@ def get_user_selections():
         ensure_api_key(selected_llm_provider)
 
     # Step 7: Thinking agents (skipped when either model is set via environment)
-    if os.environ.get("TRADINGAGENTS_QUICK_THINK_LLM") or os.environ.get("TRADINGAGENTS_DEEP_THINK_LLM"):
+    if models_from_env:
         selected_shallow_thinker = DEFAULT_CONFIG["quick_think_llm"]
         selected_deep_thinker = DEFAULT_CONFIG["deep_think_llm"]
         console.print(
@@ -619,8 +642,15 @@ def get_user_selections():
                 "Step 7: Thinking Agents", "Select your thinking agents for analysis"
             )
         )
-        selected_shallow_thinker = select_shallow_thinking_agent(selected_llm_provider)
-        selected_deep_thinker = select_deep_thinking_agent(selected_llm_provider)
+        (
+            selected_shallow_thinker,
+            selected_deep_thinker,
+        ) = select_thinking_agents(
+            selected_llm_provider,
+            previous_provider=preferences.get("thinking_provider"),
+            previous_quick=preferences.get("quick_think_llm"),
+            previous_deep=preferences.get("deep_think_llm"),
+        )
 
     # Step 8: Provider-specific thinking configuration
     thinking_level = None
@@ -660,7 +690,7 @@ def get_user_selections():
         )
         anthropic_effort = ask_anthropic_effort()
 
-    return {
+    selections = {
         "ticker": selected_ticker,
         "asset_type": asset_type.value,
         "analysis_date": analysis_date,
@@ -675,6 +705,29 @@ def get_user_selections():
         "anthropic_effort": anthropic_effort,
         "output_language": output_language,
     }
+
+    preference_updates = {
+        "analysts": [analyst.value for analyst in selected_analysts],
+    }
+    if not language_from_env:
+        preference_updates["output_language"] = output_language
+    if not provider_from_env:
+        preference_updates["llm_provider"] = selected_llm_provider.lower()
+    if not models_from_env:
+        preference_updates.update(
+            {
+                "thinking_provider": selected_llm_provider.lower(),
+                "quick_think_llm": selected_shallow_thinker,
+                "deep_think_llm": selected_deep_thinker,
+            }
+        )
+
+    if not save_cli_preferences(preference_updates):
+        console.print(
+            "[yellow]Warning: Could not save recent CLI selections.[/yellow]"
+        )
+
+    return selections
 
 
 def get_analysis_date():
