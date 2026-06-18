@@ -74,11 +74,22 @@ matrix, and trace records cannot be created or updated.
   `docs/superpowers/specs/2026-06-18-cli-recent-selections-design.md`.
 - Design commit: `38eb25c`.
 - Observed TDD RED evidence during implementation:
-  - Task 2: loader import initially failed with `ModuleNotFoundError`, then the
-    save function was missing.
-  - Task 3: the old prompt signatures did not accept prior selections and the
-    required helper functions were missing.
-  - Task 4: `main` did not call `load_cli_preferences`.
+  - Task 2, before implementation commit `bde1cdb`:
+    `python -m pytest tests/test_cli_preferences.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    first failed during collection with
+    `ModuleNotFoundError: No module named 'cli.preferences'`. After the loader
+    implementation and save tests were added, the same command entered a
+    second RED phase because `save_cli_preferences` was not defined/importable.
+  - Task 3, before implementation commit `3a91d9d`:
+    `python -m pytest tests/test_cli_recent_selections.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    failed in successive RED phases because `ask_output_language` lacked the
+    `previous` argument, `select_analysts` lacked `default_analysts`,
+    `select_previous_llm_provider` was absent, and
+    `select_thinking_agents` was absent.
+  - Task 4, before implementation commit `4063454`:
+    `python -m pytest tests/test_cli_recent_selections.py::test_questionnaire_loads_once_and_saves_interactive_fields_once -q --basetemp .pytest-tmp -p no:cacheprovider`
+    failed because `cli.main` did not expose or call
+    `load_cli_preferences`.
 - Fresh final validation:
   - `python -m pytest tests/test_cli_preferences.py tests/test_cli_recent_selections.py -q --basetemp .pytest-tmp -p no:cacheprovider`
     - `43 passed in 1.45s`
