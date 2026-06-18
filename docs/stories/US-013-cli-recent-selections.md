@@ -24,18 +24,22 @@ environment configuration remains authoritative.
 
 ## Acceptance Criteria
 
-- A first run or invalid preference file uses the current full selectors.
+- A first run or wholly invalid preference document uses the current full
+  selectors; individual invalid fields fall back independently while other
+  valid fields remain reusable.
 - Output Language, LLM provider, and the Quick/Deep Thinking Agent model pair
   offer `Use previous` and `Reselect` when valid prior values exist.
 - Analysts Team remains the existing checkbox with valid prior analyst values
   prechecked.
-- A prior regional provider reuses its exact provider key and endpoint without
-  showing the region prompt again.
+- A prior regional provider reuses its exact provider key without showing the
+  region prompt again; its endpoint is resolved from the current provider
+  catalog and is not persisted.
 - API keys, backend URLs, ticker symbols, and analysis dates are never
   persisted.
 - Interactive selections are merged and written atomically once after the full
   questionnaire completes.
-- Environment-controlled fields are not copied over interactive history.
+- Environment-controlled fields are excluded from preference updates, leaving
+  prior interactive values for those fields unchanged.
 - Preference load and save failures are non-fatal.
 
 ## Design Notes
