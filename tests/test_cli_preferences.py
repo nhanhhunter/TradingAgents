@@ -79,6 +79,31 @@ def test_invalid_document_fails_open(tmp_path, payload):
     assert load_cli_preferences(path) == {}
 
 
+def test_oversized_integer_json_fails_open(tmp_path):
+    path = tmp_path / "preferences.json"
+    path.write_text(
+        '{"version": 1, "x": ' + ("9" * 5000) + "}",
+        encoding="utf-8",
+    )
+
+    assert load_cli_preferences(path) == {}
+
+
+def test_excessively_nested_json_fails_open(tmp_path):
+    path = tmp_path / "preferences.json"
+    depth = 10000
+    path.write_text(
+        '{"version": 1, "x": '
+        + ("[" * depth)
+        + "0"
+        + ("]" * depth)
+        + "}",
+        encoding="utf-8",
+    )
+
+    assert load_cli_preferences(path) == {}
+
+
 def test_unreadable_preference_path_fails_open(tmp_path):
     path = tmp_path / "preferences.json"
     path.mkdir()

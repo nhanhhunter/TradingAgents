@@ -63,7 +63,7 @@ def load_cli_preferences(
     path = Path(path)
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
+    except (OSError, UnicodeError, ValueError, RecursionError):
         return {}
 
     return _sanitize_preferences(payload)

@@ -90,15 +90,23 @@ matrix, and trace records cannot be created or updated.
     `python -m pytest tests/test_cli_recent_selections.py::test_questionnaire_loads_once_and_saves_interactive_fields_once -q --basetemp .pytest-tmp -p no:cacheprovider`
     failed because `cli.main` did not expose or call
     `load_cli_preferences`.
+  - Final-review regression, before commit
+    `fix: fail open on pathological preference JSON`:
+    `python -m pytest tests/test_cli_preferences.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    - `2 failed, 14 passed in 0.06s`
+    - `test_oversized_integer_json_fails_open` raised `ValueError` because
+      Python rejected the 5000-digit integer literal.
+    - `test_excessively_nested_json_fails_open` raised `RecursionError` while
+      decoding 10000 nested JSON arrays.
 - Fresh final validation:
-  - `python -m pytest tests/test_cli_preferences.py tests/test_cli_recent_selections.py -q --basetemp .pytest-tmp -p no:cacheprovider`
-    - `43 passed in 1.45s`
-  - `python -m pytest tests/test_cli_env_skip.py tests/test_api_key_env.py tests/test_ollama_base_url.py tests/test_model_validation.py tests/test_crypto_asset_mode.py -q --basetemp .pytest-tmp -p no:cacheprovider`
-    - `56 passed in 1.96s`
+  - `python -m pytest tests/test_cli_preferences.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    - `16 passed in 0.03s`
+  - `python -m pytest tests/test_cli_recent_selections.py -q --basetemp .pytest-tmp -p no:cacheprovider`
+    - `29 passed in 1.43s`
   - `python -m cli.main --help`
     - Exit 0; displayed the CLI usage and options.
   - `env DEEPSEEK_API_KEY=placeholder python -m pytest -q --basetemp .pytest-tmp -p no:cacheprovider`
-    - `384 passed, 1 skipped, 7 warnings in 8.50s`
+    - `386 passed, 1 skipped, 7 warnings in 8.62s`
     - Skip: `tests/test_deepseek_reasoning.py:210` skipped the live API call
       because `DEEPSEEK_API_KEY` was unset or a placeholder.
     - Warnings: seven expected `RuntimeWarning` entries from
@@ -107,6 +115,7 @@ matrix, and trace records cannot be created or updated.
   - `git diff --check`
     - Exit 0 with no output.
   - `git status --short`
-    - Before this story update, reported only untracked `.pytest-tmp/`.
+    - Before commit, reported only the three owned modified files and
+      untracked `.pytest-tmp/`.
 - `scripts/bin/harness-cli` is absent in this checkout, so durable story,
   matrix, and trace rows were not updated.
