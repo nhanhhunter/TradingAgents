@@ -99,14 +99,16 @@ def test_ensure_api_key_unknown_provider_no_prompt(monkeypatch, cli_utils):
     mock_q.password.assert_not_called()
 
 
-def test_ensure_api_key_prompts_and_writes_to_env(monkeypatch, tmp_path, cli_utils):
+def test_ensure_api_key_prompts_and_writes_to_env(
+    monkeypatch, tmp_path, cli_utils, capsys
+):
     """When key is missing, user-pasted value must be written to .env AND os.environ."""
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("TRADINGAGENTS_ENV_FILE", str(tmp_path / ".env"))
 
     fake_prompt = type("P", (), {"ask": staticmethod(lambda: "sk-deepseek-test")})()
-    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt), \
-         patch.object(cli_utils, "find_dotenv", return_value=""):
+    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt):
         result = cli_utils.ensure_api_key("deepseek")
 
     assert result == "sk-deepseek-test"
@@ -115,6 +117,7 @@ def test_ensure_api_key_prompts_and_writes_to_env(monkeypatch, tmp_path, cli_uti
     assert env_file.exists()
     assert "DEEPSEEK_API_KEY" in env_file.read_text()
     assert "sk-deepseek-test" in env_file.read_text()
+    assert "sk-deepseek-test" not in capsys.readouterr().out
 
 
 def test_ensure_api_key_user_cancels_returns_none(monkeypatch, tmp_path, cli_utils):
@@ -158,11 +161,11 @@ def test_ensure_vnstock_api_key_for_vietnam_symbol_prompts_and_writes(
     """First Vietnam-market run should ask for VNSTOCK_API_KEY and persist it."""
     monkeypatch.delenv("VNSTOCK_API_KEY", raising=False)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("TRADINGAGENTS_ENV_FILE", str(tmp_path / ".env"))
     key_path = tmp_path / ".vnstock" / "api_key.json"
 
     fake_prompt = type("P", (), {"ask": staticmethod(lambda: "vnstock-test")})()
     with patch.object(cli_utils.questionary, "password", return_value=fake_prompt), \
-         patch.object(cli_utils, "find_dotenv", return_value=""), \
          patch.object(cli_utils, "VNSTOCK_API_KEY_PATH", key_path):
         result = cli_utils.ensure_vnstock_api_key_for_symbol("VCB.VN")
 

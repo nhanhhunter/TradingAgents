@@ -10,7 +10,7 @@ normal
 
 ## Product Contract
 
-When a first-run CLI user selects a provider whose API key is missing, TradingAgents prompts for that key, saves it to the project `.env`, and uses it for the current run. Vietnam tickers (`*.VN` and `VNINDEX`) also prompt for `VNSTOCK_API_KEY` when no environment value or VNstock credential file exists.
+When a first-run CLI user selects a provider whose API key is missing, TradingAgents prompts for that key, saves it through the deterministic environment-file resolver, and uses it for the current run. Source checkouts use their exact project `.env`; installed commands use `~/.tradingagents/.env` unless explicitly overridden. Vietnam tickers (`*.VN` and `VNINDEX`) also prompt for `VNSTOCK_API_KEY` when no environment value or VNstock credential file exists.
 
 ## Relevant Product Docs
 
@@ -23,6 +23,8 @@ When a first-run CLI user selects a provider whose API key is missing, TradingAg
 
 - LLM provider API keys are not hardcoded in examples.
 - Missing provider keys are requested interactively and persisted to `.env`.
+- Parent-directory `.env` files are never read or modified implicitly.
+- Installed and Docker runs persist keys outside ephemeral working directories.
 - Vietnam-market runs request `VNSTOCK_API_KEY` on first use when needed.
 - README installation instructions target `nhanhhunter/TradingAgents` and cover macOS/Linux plus Windows.
 
@@ -54,3 +56,7 @@ No harness rule changes required.
 - RED before implementation: three new tests failed because `ensure_vnstock_api_key_for_symbol` did not exist.
 - GREEN after implementation: `.\.venv\Scripts\python.exe -m pytest tests\test_api_key_env.py tests\test_cli_env_skip.py tests\test_vnstock_adapter.py -q` passed with 36 tests.
 - Docs check: `rg "TauricResearch/TradingAgents.git|DEEPSEEK_API_KEY=sk-|MIMO_API_KEY=tp-|9ROUTER_API_KEY=sk-|VNSTOCK_API_KEY=vnstock_" README.md .env.example` returned no matches.
+- 2026-06-21 regression coverage: deterministic environment resolution,
+  installed-package fallback, Docker named-volume persistence, and fresh
+  process reload are covered by `tests/test_env_config.py`; the focused
+  credential suite passed with 45 tests.

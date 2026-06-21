@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir .
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    TRADINGAGENTS_ENV_FILE=/home/appuser/.tradingagents/.env
 
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"

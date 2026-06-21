@@ -182,7 +182,18 @@ docker compose --profile ollama run --rm tradingagents-ollama
 
 You do not need to put API keys in `.env.example`. On the first interactive
 run, TradingAgents asks for the API key that matches the LLM provider you
-select, saves it to the project `.env`, and uses it immediately for that run.
+select, saves it to a reusable dotenv file, and uses it immediately.
+
+The destination is deterministic and never searches parent directories:
+
+1. `TRADINGAGENTS_ENV_FILE`, when set.
+2. The exact current-directory `.env`, when it exists.
+3. `<repo>/.env` when running from a TradingAgents source checkout.
+4. `~/.tradingagents/.env` when the installed command is launched elsewhere.
+
+On Windows, `~` means the current user's home directory. Relative
+`TRADINGAGENTS_ENV_FILE` values are resolved from the launch directory.
+Non-empty environment variables always override saved values.
 
 Supported provider keys:
 
@@ -206,7 +217,7 @@ Supported provider keys:
 
 For Vietnamese tickers such as `VCB.VN` or `VNINDEX`, the CLI also asks for
 `VNSTOCK_API_KEY` on first use when no VNstock credential file already exists.
-The key is saved to `.env`; VNstock later bootstraps its own
+The key is saved through the same resolver; VNstock later bootstraps its own
 `~/.vnstock/api_key.json` file when market data is fetched.
 
 Manual `.env` setup is optional. Use it when you want unattended runs or want
@@ -228,6 +239,12 @@ start with a digit.
 
 For enterprise providers (e.g. Azure OpenAI, AWS Bedrock), copy
 `.env.enterprise.example` to `.env.enterprise` and fill in your credentials.
+
+Docker images set `TRADINGAGENTS_ENV_FILE` to
+`/home/appuser/.tradingagents/.env`. The Compose configuration already mounts
+that directory through the `tradingagents_data` named volume, so a key entered
+inside the container survives container replacement. Keys supplied by the
+host's `.env` or Compose environment remain authoritative when non-empty.
 
 For local models, configure Ollama with `llm_provider: "ollama"`. The default
 endpoint is `http://localhost:11434/v1`; set `OLLAMA_BASE_URL` to point at a

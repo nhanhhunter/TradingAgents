@@ -3,11 +3,11 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Dict
 
 import questionary
-from dotenv import find_dotenv, set_key
 from rich.console import Console
 
 from cli.models import AnalystType, AssetType
 from tradingagents.dataflows.vietnam_symbols import is_vietnam_symbol
+from tradingagents.env_config import persist_env_value
 from tradingagents.llm_clients.api_key_env import get_api_key_env
 from tradingagents.llm_clients.model_catalog import get_model_options
 
@@ -698,10 +698,7 @@ def ensure_api_key(provider: str) -> Optional[str]:
         )
         return None
 
-    env_path = find_dotenv(usecwd=True) or str(Path.cwd() / ".env")
-    Path(env_path).touch(exist_ok=True)
-    set_key(env_path, env_var, key)
-    os.environ[env_var] = key
+    env_path = persist_env_value(env_var, key)
     console.print(f"[green]Saved {env_var} to {env_path}[/green]")
     return key
 
@@ -739,10 +736,7 @@ def ensure_vnstock_api_key_for_symbol(symbol: str) -> Optional[str]:
         )
         return None
 
-    env_path = find_dotenv(usecwd=True) or str(Path.cwd() / ".env")
-    Path(env_path).touch(exist_ok=True)
-    set_key(env_path, "VNSTOCK_API_KEY", key)
-    os.environ["VNSTOCK_API_KEY"] = key
+    env_path = persist_env_value("VNSTOCK_API_KEY", key)
     console.print(f"[green]Saved VNSTOCK_API_KEY to {env_path}[/green]")
     return key
 
