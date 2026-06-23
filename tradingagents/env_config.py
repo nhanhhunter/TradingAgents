@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import os
 from collections.abc import Mapping, MutableMapping
+from contextlib import suppress
 from pathlib import Path
 
 from dotenv import dotenv_values, set_key
-
 
 ENV_FILE_OVERRIDE = "TRADINGAGENTS_ENV_FILE"
 
@@ -101,11 +101,8 @@ def persist_env_value(
     env_path.touch(mode=0o600, exist_ok=True)
     set_key(str(env_path), name, value)
 
-    try:
+    with suppress(OSError):
         env_path.chmod(0o600)
-    except OSError:
-        # Windows ACLs and some mounted filesystems do not expose POSIX modes.
-        pass
 
     environ[name] = value
     return env_path

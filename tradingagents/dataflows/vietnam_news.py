@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
+import re
+import xml.etree.ElementTree as ET
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from html import unescape
-import re
-from typing import Iterable, Optional
 from urllib.parse import quote_plus
-import xml.etree.ElementTree as ET
 
 import requests
 
@@ -22,11 +22,11 @@ class VietnamNewsArticle:
     title: str
     source: str
     link: str
-    published_at: Optional[datetime]
+    published_at: datetime | None
     summary: str = ""
 
 
-def _parse_date(value: str | None) -> Optional[datetime]:
+def _parse_date(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
@@ -170,8 +170,8 @@ def get_news_vietnam(ticker: str, start_date: str, end_date: str) -> str:
 
 def get_global_news_vietnam(
     curr_date: str,
-    look_back_days: Optional[int] = None,
-    limit: Optional[int] = None,
+    look_back_days: int | None = None,
+    limit: int | None = None,
 ) -> str:
     from dateutil.relativedelta import relativedelta
 

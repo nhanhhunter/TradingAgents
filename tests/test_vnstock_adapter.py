@@ -5,8 +5,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from tradingagents.dataflows import vnstock_adapter
-from tradingagents.dataflows import y_finance
+from tradingagents.dataflows import vnstock_adapter, y_finance
 
 
 @pytest.mark.unit

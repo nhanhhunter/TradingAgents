@@ -5,7 +5,6 @@ import pytest
 
 from cli.models import AnalystType, AssetType
 
-
 pytestmark = pytest.mark.unit
 
 

@@ -9,16 +9,15 @@ from cli.preferences import (
     save_cli_preferences,
 )
 
-
 pytestmark = pytest.mark.unit
 
 
 def test_default_preference_path_is_user_local():
-    assert PREFERENCES_PATH == (
+    assert (
         preferences.Path.home()
         / ".tradingagents"
         / "cli_preferences.json"
-    )
+    ) == PREFERENCES_PATH
 
 
 def test_missing_preference_file_returns_empty_dict(tmp_path):
@@ -234,7 +233,7 @@ def test_save_replaces_once_from_temporary_file_in_destination_directory(
     assert save_cli_preferences({"output_language": "English"}, path)
 
     assert len(calls) == 1
-    source, destination = map(lambda value: preferences.Path(value), calls[0])
+    source, destination = (preferences.Path(value) for value in calls[0])
     assert source.parent == path.parent
     assert destination == path
 

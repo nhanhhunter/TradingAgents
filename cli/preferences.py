@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from collections.abc import Mapping
+from contextlib import suppress
 from pathlib import Path
-from typing import Any, Mapping
-
+from typing import Any
 
 PREFERENCES_VERSION = 1
 PREFERENCES_PATH = (
@@ -108,8 +109,6 @@ def save_cli_preferences(
         return True
     except OSError:
         if temporary_path is not None:
-            try:
+            with suppress(OSError):
                 temporary_path.unlink(missing_ok=True)
-            except OSError:
-                pass
         return False

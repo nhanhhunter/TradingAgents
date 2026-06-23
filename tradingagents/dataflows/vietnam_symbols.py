@@ -7,7 +7,6 @@ equities entered with a ``.VN`` suffix and the market index ``VNINDEX``.
 
 from __future__ import annotations
 
-
 VNINDEX_SYMBOL = "VNINDEX"
 
 
