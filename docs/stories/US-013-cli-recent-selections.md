@@ -52,9 +52,6 @@ environment configuration remains authoritative.
 
 ## Validation
 
-When updating durable proof status, use numeric booleans:
-`scripts/bin/harness-cli story update --id US-013 --unit 1 --integration 1 --e2e 0 --platform 1`.
-
 | Layer | Expected proof |
 | --- | --- |
 | Unit | `python -m pytest tests/test_cli_preferences.py tests/test_cli_recent_selections.py -q --basetemp .pytest-tmp -p no:cacheprovider` |
@@ -62,11 +59,6 @@ When updating durable proof status, use numeric booleans:
 | E2E | Not required |
 | Platform | `python -m cli.main --help` |
 | Release | README |
-
-## Harness Delta
-
-`scripts/bin/harness-cli` is absent in this checkout, so durable intake, story,
-matrix, and trace records cannot be created or updated.
 
 ## Evidence
 
@@ -117,5 +109,3 @@ matrix, and trace records cannot be created or updated.
   - `git status --short`
     - Before commit, reported only the three owned modified files and
       untracked `.pytest-tmp/`.
-- `scripts/bin/harness-cli` is absent in this checkout, so durable story,
-  matrix, and trace rows were not updated.

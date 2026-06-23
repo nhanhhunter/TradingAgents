@@ -267,13 +267,10 @@ directory.
 Run focused CLI tests, then the full test suite. No live provider calls are
 required.
 
-## Harness Classification
+## Change Classification
 
 Lane: normal.
 
 Reason: this is a bounded user-visible CLI workflow change with existing
 behavior and tests to preserve. It does not alter secrets, provider request
 behavior, report contracts, or stored analysis data.
-
-The required `scripts/bin/harness-cli` binary is absent from this checkout, so
-the durable intake and matrix commands cannot currently be recorded.

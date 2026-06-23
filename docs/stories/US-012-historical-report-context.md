@@ -41,9 +41,6 @@ pipeline inputs.
 
 ## Validation
 
-When updating durable proof status, use numeric booleans:
-`scripts/bin/harness-cli story update --id <id> --unit 1 --integration 1 --e2e 0 --platform 0`.
-
 | Layer | Expected proof |
 | --- | --- |
 | Unit | `pytest tests/test_historical_reports.py tests/test_memory_log.py` |
@@ -51,11 +48,6 @@ When updating durable proof status, use numeric booleans:
 | E2E | Not required |
 | Platform | Not required |
 | Release | README and changelog updated |
-
-## Harness Delta
-
-`scripts/bin/harness-cli` is absent in this checkout, so durable story rows could
-not be created or updated.
 
 ## Evidence
 

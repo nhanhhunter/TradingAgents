@@ -36,9 +36,6 @@ When a first-run CLI user selects a provider whose API key is missing, TradingAg
 
 ## Validation
 
-When updating durable proof status, use numeric booleans:
-`scripts/bin/harness-cli story update --id US-002 --unit 1 --integration 0 --e2e 0 --platform 1`.
-
 | Layer | Expected proof |
 | --- | --- |
 | Unit | `python -m pytest tests/test_api_key_env.py tests/test_cli_env_skip.py tests/test_vnstock_adapter.py -q` |

@@ -88,11 +88,6 @@ while environment configuration remains authoritative.
 | Platform | `python -m cli.main --help` |
 | Release | README documents the preference path and precedence |
 
-## Harness Delta
-
-`scripts/bin/harness-cli` is absent in this checkout, so durable intake,
-matrix, and story rows cannot be recorded until the binary is restored.
-
 ## Evidence
 
 - Approved design: `docs/superpowers/specs/2026-06-18-cli-recent-selections-design.md`.
@@ -1719,9 +1714,7 @@ Expected: all non-live tests pass; the credential-gated live integration test re
 
 Change the story status from `in_progress` to `implemented`. Under `Evidence`,
 append each command from Steps 1-4 and its observed pytest summary line
-verbatim. Also record the RED failures observed during Tasks 2-4 and the fact
-that Harness durable rows were not updated because `scripts/bin/harness-cli`
-is absent in this checkout.
+verbatim. Also record the RED failures observed during Tasks 2-4.
 
 - [ ] **Step 6: Review the complete diff**
 
