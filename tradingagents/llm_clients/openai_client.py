@@ -220,7 +220,7 @@ OPENAI_COMPATIBLE_PROVIDERS: dict[str, ProviderSpec] = {
     "minimax":    ProviderSpec(base_url="https://api.minimax.io/v1", chat_class=MinimaxChatOpenAI),
     "minimax-cn": ProviderSpec(base_url="https://api.minimaxi.com/v1", chat_class=MinimaxChatOpenAI),
     "mimo":       ProviderSpec(base_url="https://token-plan-sgp.xiaomimimo.com/v1"),
-    "9router":    ProviderSpec(base_url="http://9router:20128/v1"),
+    "9router":    ProviderSpec(base_url="http://9router:20128/v1", base_url_env="9ROUTER_BASE_URL"),
     "openrouter": ProviderSpec(base_url="https://openrouter.ai/api/v1"),
     "mistral":    ProviderSpec(base_url="https://api.mistral.ai/v1"),
     "kimi":       ProviderSpec(base_url="https://api.moonshot.ai/v1"),

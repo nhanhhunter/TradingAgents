@@ -70,12 +70,19 @@ def test_resolver_evaluation_is_call_time(monkeypatch):
 def test_resolver_does_not_affect_other_providers(monkeypatch):
     """OLLAMA_BASE_URL should NOT leak into xai/deepseek/etc."""
     monkeypatch.setenv("OLLAMA_BASE_URL", "http://elsewhere/v1")
+    monkeypatch.setenv("MIMO_API_KEY", "dummy")
+    monkeypatch.setenv("9ROUTER_API_KEY", "dummy")
     mod = _reload_client()
     assert _base_url(mod, "xai") == "https://api.x.ai/v1"
     assert _base_url(mod, "deepseek") == "https://api.deepseek.com"
     assert _base_url(mod, "mimo") == "https://token-plan-sgp.xiaomimimo.com/v1"
     assert _base_url(mod, "9router") == "http://9router:20128/v1"
 
+def test_9router_honors_base_url_env(monkeypatch):
+    monkeypatch.setenv("9ROUTER_BASE_URL", "http://custom-9router:20128/v1")
+    monkeypatch.setenv("9ROUTER_API_KEY", "dummy")
+    mod = _reload_client()
+    assert _base_url(mod, "9router") == "http://custom-9router:20128/v1"
 
 def test_client_get_llm_picks_up_env(monkeypatch):
     """End-to-end: OllamaClient.get_llm() respects OLLAMA_BASE_URL."""
