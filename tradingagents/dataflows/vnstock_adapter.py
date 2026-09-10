@@ -228,7 +228,7 @@ def get_stock_stats_indicators_window(
 
 def get_fundamentals(
     ticker: Annotated[str, "ticker symbol of the company"],
-    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
+    curr_date: Annotated[str, "analysis date in YYYY-MM-DD format"] = None
 ):
     if is_vietnam_index(ticker):
         return _index_no_statement(ticker)

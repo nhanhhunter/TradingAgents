@@ -52,7 +52,15 @@ def build_historical_report_context(
 
     safe_ticker = safe_ticker_component(ticker)
     logs_dir = Path(results_dir).expanduser() / safe_ticker / "TradingAgentsStrategy_logs"
-    outcome_by_date = _memory_outcomes_by_date(ticker, memory_entries or [])
+    # Match the decision log's point-in-time guard: historical runs may only
+    # see outcomes already resolved by the trade date. Keep live-run behavior.
+    entries = memory_entries or []
+    if current_date < date.today():
+        entries = [
+            entry for entry in entries
+            if entry.get("resolved") and entry["resolved"] <= current_date.isoformat()
+        ]
+    outcome_by_date = _memory_outcomes_by_date(ticker, entries)
 
     summaries = []
     for log_date, path in _iter_prior_log_paths(logs_dir, current_date):

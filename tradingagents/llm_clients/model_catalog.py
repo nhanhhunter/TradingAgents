@@ -18,15 +18,15 @@ _CUSTOM_ONLY: dict[str, list[ModelOption]] = {
 # All GLM 4.7+ entries support thinking mode via thinking={"type":"enabled"}.
 _GLM_MODELS: dict[str, list[ModelOption]] = {
     "quick": [
+        ("GLM-5.3-Flash - Fast, cost-efficient, 1M ctx", "glm-5.3-flash"),
         ("GLM-5-Turbo - Fast, switchable thinking modes", "glm-5-turbo"),
-        ("GLM-4.7 - Previous-gen flagship", "glm-4.7"),
         ("GLM-4.5-Air - Lightweight, cost-efficient", "glm-4.5-air"),
         ("Custom model ID", "custom"),
     ],
     "deep": [
-        ("GLM-5.2 - Latest flagship, 1M ctx", "glm-5.2"),
+        ("GLM-5.3 - Latest flagship, 1M ctx", "glm-5.3"),
+        ("GLM-5.2 - 744B, 1M ctx", "glm-5.2"),
         ("GLM-5.1 - 745B, 200K ctx", "glm-5.1"),
-        ("GLM-5 - Flagship, 204K ctx", "glm-5"),
         ("GLM-4.7 - Previous-gen flagship", "glm-4.7"),
         ("Custom model ID", "custom"),
     ],
@@ -61,6 +61,23 @@ _QWEN_MODELS: dict[str, list[ModelOption]] = {
 # Shared model list for MiniMax's global and CN endpoints (same IDs).
 # Full official lineup per platform.minimax.io/docs/api-reference/text-openai-api.
 # M3 carries a 1M-token context window; the M2.x line is 204,800 tokens.
+# Kimi (Moonshot). Source: platform.kimi.ai/docs/models. "Custom model ID" stays
+# available for models newer than this list. The k2.7-code variants are omitted:
+# they are coding specialists, not analysis models.
+_KIMI_MODELS: dict[str, list[ModelOption]] = {
+    "quick": [
+        ("Kimi K2.6 - 256K ctx, thinking modes, agent tasks", "kimi-k2.6"),
+        ("Kimi K3 - Flagship, 1M ctx", "kimi-k3"),
+        ("Custom model ID", "custom"),
+    ],
+    "deep": [
+        ("Kimi K3 - Flagship, 1M ctx, native visual understanding", "kimi-k3"),
+        ("Kimi K2.6 - 256K ctx, thinking modes, agent tasks", "kimi-k2.6"),
+        ("Custom model ID", "custom"),
+    ],
+}
+
+
 _MINIMAX_MODELS: dict[str, list[ModelOption]] = {
     "quick": [
         ("MiniMax-M3 - Latest, 1M ctx, native multimodal", "MiniMax-M3"),
@@ -81,27 +98,27 @@ _MINIMAX_MODELS: dict[str, list[ModelOption]] = {
 MODEL_OPTIONS: ProviderModeOptions = {
     "openai": {
         "quick": [
+            ("GPT-5.6 Luna - Fast, cost-efficient frontier", "gpt-5.6-luna"),
+            ("GPT-5.6 Terra - Balances intelligence and cost", "gpt-5.6-terra"),
             ("GPT-5.4 Mini - Fast, strong coding and tool use", "gpt-5.4-mini"),
-            ("GPT-5.4 Nano - Cheapest, high-volume tasks", "gpt-5.4-nano"),
-            ("GPT-5.5 - Latest frontier, 1M context", "gpt-5.5"),
         ],
         "deep": [
-            ("GPT-5.5 - Latest frontier, 1M context", "gpt-5.5"),
-            ("GPT-5.4 - Previous-gen frontier, 1M context, cost-effective", "gpt-5.4"),
-            ("GPT-5.2 - Strong reasoning, cost-effective", "gpt-5.2"),
-            ("GPT-5.5 Pro - Most capable, expensive ($30/$180 per 1M tokens)", "gpt-5.5-pro"),
+            ("GPT-5.6 - Latest frontier reasoning (Sol)", "gpt-5.6"),
+            ("GPT-5.6 Terra - Balances intelligence and cost", "gpt-5.6-terra"),
+            ("GPT-5.5 - Previous-gen frontier, 1M context", "gpt-5.5"),
+            ("GPT-5.4 - Cost-effective, 1M context", "gpt-5.4"),
         ],
     },
     "anthropic": {
         "quick": [
-            ("Claude Sonnet 4.6 - Best speed and intelligence balance", "claude-sonnet-4-6"),
+            ("Claude Sonnet 5 - Best speed and intelligence balance", "claude-sonnet-5"),
             ("Claude Haiku 4.5 - Fastest with near-frontier intelligence", "claude-haiku-4-5"),
         ],
         "deep": [
-            ("Claude Opus 4.8 - Latest frontier, agentic coding and reasoning", "claude-opus-4-8"),
+            ("Claude Fable 5 - Most capable, long-running agents", "claude-fable-5"),
+            ("Claude Opus 4.8 - Frontier agentic coding and reasoning", "claude-opus-4-8"),
+            ("Claude Sonnet 5 - Near-frontier intelligence at Sonnet cost", "claude-sonnet-5"),
             ("Claude Opus 4.7 - Previous frontier, long-running agents", "claude-opus-4-7"),
-            ("Claude Opus 4.6 - Frontier intelligence, agents and coding", "claude-opus-4-6"),
-            ("Claude Sonnet 4.6 - Best speed and intelligence balance", "claude-sonnet-4-6"),
         ],
     },
     "google": {
@@ -151,6 +168,7 @@ MODEL_OPTIONS: ProviderModeOptions = {
     "glm-cn": _GLM_MODELS,
     # MiniMax: same model IDs across global (.io) and China (.com) regions,
     # so the two provider keys share one model list.
+    "kimi": _KIMI_MODELS,
     "minimax": _MINIMAX_MODELS,
     "minimax-cn": _MINIMAX_MODELS,
     "mimo": {
@@ -204,7 +222,6 @@ MODEL_OPTIONS: ProviderModeOptions = {
     # stale. The endpoint + key are wired by the provider; the user picks the
     # model their account has access to.
     "mistral": _CUSTOM_ONLY,
-    "kimi": _CUSTOM_ONLY,
     "groq": _CUSTOM_ONLY,
     "nvidia": _CUSTOM_ONLY,
     # Bedrock model IDs / cross-region inference profile IDs are user-specified.

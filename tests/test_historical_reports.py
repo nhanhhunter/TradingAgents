@@ -85,6 +85,7 @@ def test_summary_contains_only_expected_report_fields_and_outcome(tmp_path):
             "alpha": "+2.0%",
             "holding": "5d",
             "reflection": "Momentum confirmed.",
+            "resolved": "2026-01-05",
         }
     ]
 
@@ -105,6 +106,22 @@ def test_summary_contains_only_expected_report_fields_and_outcome(tmp_path):
     assert "Momentum confirmed." in ctx
     assert "research history should not leak" not in ctx
     assert "risk history should not leak" not in ctx
+
+
+@pytest.mark.parametrize("resolved", [None, "2026-01-06"])
+def test_historical_summary_excludes_outcomes_not_known_by_trade_date(tmp_path, resolved):
+    _write_state(tmp_path, "NVDA", "2026-01-04")
+    ctx = build_historical_report_context(
+        _config(tmp_path), "NVDA", "2026-01-05",
+        memory_entries=[{
+            "ticker": "NVDA", "date": "2026-01-04", "pending": False,
+            "resolved": resolved, "reflection": "Future outcome lesson",
+            "raw": "+5.0%",
+        }],
+    )
+    assert "Prior analysis: 2026-01-04" in ctx
+    assert "Outcome:" not in ctx
+    assert "Future outcome lesson" not in ctx
 
 
 def test_summary_respects_per_run_char_limit(tmp_path):

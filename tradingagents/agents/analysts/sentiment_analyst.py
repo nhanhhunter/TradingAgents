@@ -36,6 +36,7 @@ from tradingagents.agents.utils.agent_utils import (
     get_news,
 )
 from tradingagents.agents.utils.structured import (
+    NO_EXTERNAL_TOOLS,
     bind_structured,
     invoke_structured_or_freetext,
 )
@@ -67,8 +68,12 @@ def create_sentiment_analyst(llm):
         # returns a string (no exceptions surface from here), so the LLM
         # always sees something — either real data or a clear placeholder.
         news_block = get_news.func(ticker, start_date, end_date)
-        stocktwits_block = fetch_stocktwits_messages(ticker, limit=30)
-        reddit_block = fetch_reddit_posts(ticker)
+        # Pass the analysis window so a historical run trims social posts to it
+        # instead of leaking today's chatter into a backtest (#1220).
+        stocktwits_block = fetch_stocktwits_messages(
+            ticker, limit=30, start_date=start_date, end_date=end_date
+        )
+        reddit_block = fetch_reddit_posts(ticker, start_date=start_date, end_date=end_date)
 
         system_message = _build_system_message(
             ticker=ticker,
@@ -86,7 +91,11 @@ def create_sentiment_analyst(llm):
                     "You are a helpful AI assistant, collaborating with other assistants."
                     " If you or any other assistant has the FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** or deliverable,"
                     " prefix your response with FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL** so the team knows to stop."
-                    " Today's date is {current_date}; treat it as 'now' for all analysis and tool-call date ranges. {instrument_context}"
+                    # No tool-calling here: the data is pre-fetched into the
+                    # prompt, so tool-range wording would only invite a
+                    # hallucinated tool call (#1130).
+                    " Today's date is {current_date}; treat it as 'now' for all analysis. {instrument_context}"
+                    " " + NO_EXTERNAL_TOOLS +
                     "\n{system_message}",
                 ),
                 MessagesPlaceholder(variable_name="messages"),

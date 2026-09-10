@@ -36,8 +36,9 @@ def _resp(read_fn):
         def __exit__(self_inner, *a):
             return False
 
-        def read(self_inner):
-            return read_fn()
+        def read(self_inner, size=-1):
+            data = read_fn()
+            return data if size is None or size < 0 else data[:size]
     return _Resp()
 
 
@@ -85,9 +86,9 @@ class TestRssParsing:
         assert posts[0]["created_utc"] > 0
         assert "datacenter unit" in posts[0]["selftext"]
 
-    def test_malformed_xml_fails_open(self):
+    def test_malformed_xml_reports_unavailable(self):
         with patch.object(reddit, "urlopen", return_value=_resp(lambda: b"<<not xml>>")):
-            assert reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0) == []
+            assert reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0) is None
 
 
 @pytest.mark.unit
@@ -138,7 +139,7 @@ class TestRss429Backoff:
              patch.object(reddit.time, "sleep"):
             posts = reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0)
         assert op.call_count == 2          # one retry, then gives up cleanly
-        assert posts == []
+        assert posts is None
 
     def test_retry_after_header_is_honoured(self):
         err = HTTPError("url", 429, "Too Many Requests", {"Retry-After": "12"}, None)
@@ -147,21 +148,49 @@ class TestRss429Backoff:
             reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0)
         slept.assert_called_once_with(12.0)
 
+    def test_retry_after_zero_is_honoured_not_treated_as_absent(self):
+        # A valid "Retry-After: 0" means retry at once; it must not fall through
+        # to the fallback wait (the earlier `or 5.0` bug turned 0 into 5s).
+        err = HTTPError("url", 429, "Too Many Requests", {"Retry-After": "0"}, None)
+        with patch.object(reddit, "urlopen", side_effect=[err, _atom_resp()]), \
+             patch.object(reddit.time, "sleep") as slept:
+            reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0)
+        slept.assert_called_once_with(0.0)
+
+    def test_headerless_429_fallback_is_jittered(self):
+        # No Retry-After -> our own ~5s fallback, jittered so concurrent runs
+        # don't retry in lockstep (kept within a tight band).
+        err = HTTPError("url", 429, "Too Many Requests", {}, None)
+        with patch.object(reddit, "urlopen", side_effect=[err, _atom_resp()]), \
+             patch.object(reddit.time, "sleep") as slept:
+            reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0)
+        slept.assert_called_once()
+        (wait,), _ = slept.call_args
+        assert 48.0 <= wait <= 72.0  # 60s +/-20% jitter
+
 
 @pytest.mark.unit
 class TestChunkedTransferErrorsHandled:
     """IncompleteRead/RemoteDisconnected come from http.client and are NOT
     OSErrors, so they were previously uncaught and crashed the pipeline (#1024)."""
 
-    def test_rss_incomplete_read_degrades_to_empty(self):
+    def test_rss_incomplete_read_reports_unavailable(self):
         with patch.object(reddit, "urlopen", return_value=_raise(http.client.IncompleteRead(b""))):
-            assert reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0) == []
+            assert reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0) is None
 
     def test_json_incomplete_read_falls_back_to_rss(self):
         with patch.object(reddit, "urlopen", return_value=_raise(http.client.IncompleteRead(b""))), \
              patch.object(reddit, "_fetch_subreddit_rss", return_value=[]) as rss:
             reddit._fetch_subreddit_json("NVDA", "stocks", 5, 5.0)
         rss.assert_called_once()
+
+    def test_oversized_rss_feed_is_refused_not_parsed(self):
+        # A hostile/misbehaving endpoint streaming an unbounded body must not be
+        # read into memory before parsing; overflow degrades to an empty feed.
+        big = _resp(lambda: b"x" * 100)
+        with patch.object(reddit, "_MAX_FEED_BYTES", 10), \
+             patch.object(reddit, "urlopen", return_value=big):
+            assert reddit._fetch_subreddit_rss("NVDA", "stocks", 5, 5.0) is None
 
 
 @pytest.mark.unit
@@ -190,3 +219,86 @@ class TestFormatterHandlesRssPosts:
         assert "1234↑" in out
         assert "56c" in out
         assert "via RSS" not in out
+
+
+@pytest.mark.unit
+class TestCryptoSearchTerm:
+    """A crypto pair (BTC-USD) barely matches Reddit text; search the base (#1113)."""
+
+    def _captured_ticker(self, ticker):
+        seen = {}
+
+        def fake_fetch(t, sub, limit, timeout, **kwargs):
+            seen["ticker"] = t
+            return []
+
+        with patch.object(reddit, "_fetch_subreddit", side_effect=fake_fetch):
+            reddit.fetch_reddit_posts(ticker, subreddits=("stocks",), inter_request_delay=0)
+        return seen["ticker"]
+
+    def test_crypto_pair_searches_base(self):
+        assert self._captured_ticker("BTC-USD") == "BTC"
+
+    def test_equity_passes_through(self):
+        assert self._captured_ticker("NVDA") == "NVDA"
+
+
+@pytest.mark.unit
+class TestFailedFetchIsNotSilence:
+    """A throttled fetch must not be rendered as "no posts found" (#1295).
+
+    Returning [] for both a failed request and a genuinely empty search made the
+    sentiment analyst read rate limiting as real silence ("r/stocks and
+    r/investing are silent"), which is a signal that was never observed.
+    """
+
+    _POST = {
+        "title": "NVDA pops", "score": None, "num_comments": None,
+        "created_utc": reddit._iso_to_timestamp("2026-05-20T14:30:00Z"),
+        "selftext": "", "source": "rss",
+    }
+
+    def _run(self, results):
+        """Drive fetch_reddit_posts with a per-subreddit result sequence."""
+        subs = tuple(f"s{i}" for i in range(len(results)))
+        with patch.object(reddit, "_fetch_subreddit", side_effect=list(results)):
+            return reddit.fetch_reddit_posts(
+                "NVDA", subreddits=subs, inter_request_delay=0
+            )
+
+    def test_failed_subreddit_is_marked_unavailable_not_empty(self):
+        out = self._run([None, [self._POST]])
+        assert "unavailable" in out
+        assert "no posts found" not in out.split("unavailable")[0]
+
+    def test_all_sources_failing_does_not_claim_no_posts(self):
+        out = self._run([None, None])
+        assert "Reddit unavailable" in out
+        assert "no Reddit posts found" not in out
+
+    def test_mixed_failure_and_empty_only_claims_silence_for_searched_subs(self):
+        # s0 failed, s1 genuinely returned nothing: the "no posts" claim must
+        # cover only s1, with s0 reported separately as unavailable.
+        out = self._run([None, []])
+        assert "r/s1" in out.split("unavailable (fetch failed)")[0]
+        assert "unavailable (fetch failed): r/s0" in out
+
+    def test_genuine_empty_still_reports_no_posts(self):
+        out = self._run([[], []])
+        assert "no Reddit posts found" in out
+        assert "unavailable" not in out
+
+    def test_retry_is_not_spent_again_after_a_failure(self):
+        # The 60s back-off must be paid at most once per run, so subsequent
+        # subreddits are fetched with retry disabled rather than stalling.
+        seen = []
+
+        def record(t, sub, limit, timeout, _retry=True):
+            seen.append(_retry)
+            return None
+
+        with patch.object(reddit, "_fetch_subreddit", side_effect=record):
+            reddit.fetch_reddit_posts(
+                "NVDA", subreddits=("a", "b", "c"), inter_request_delay=0
+            )
+        assert seen == [True, False, False]
