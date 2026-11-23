@@ -73,11 +73,10 @@ def load_tradingagents_env(
     primary = resolve_env_file(cwd=cwd, home=home, environ=environ)
     candidates = [primary]
 
-    enterprise = cwd / ".env.enterprise"
-    if enterprise != primary:
-        candidates.append(enterprise)
-
     if not environ.get(ENV_FILE_OVERRIDE):
+        enterprise = cwd / ".env.enterprise"
+        if enterprise != primary:
+            candidates.append(enterprise)
         user_env = home / ".tradingagents" / ".env"
         if user_env not in candidates:
             candidates.append(user_env)
@@ -98,9 +97,11 @@ def persist_env_value(
     environ = os.environ if environ is None else environ
     env_path = resolve_env_file(cwd=cwd, home=home, environ=environ)
     env_path.parent.mkdir(parents=True, exist_ok=True)
-    env_path.touch(mode=0o600, exist_ok=True)
+    if not env_path.exists():
+        os.close(os.open(env_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600))
+    with suppress(OSError):
+        env_path.chmod(0o600)
     set_key(str(env_path), name, value)
-
     with suppress(OSError):
         env_path.chmod(0o600)
 

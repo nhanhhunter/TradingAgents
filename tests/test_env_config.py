@@ -153,7 +153,7 @@ def test_docker_runtime_uses_named_volume_backed_env_file():
     )
     assert (
         compose.count(
-            "tradingagents_data:/home/appuser/.tradingagents"
+            "${TRADINGAGENTS_DATA_DIR:-tradingagents_data}:/home/appuser/.tradingagents"
         )
         == 2
     )

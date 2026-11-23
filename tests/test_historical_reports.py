@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from tradingagents.agents.utils.historical_reports import build_historical_report_context
+from tradingagents.agents.historical_reports import build_historical_report_context
 
 
 def _state(date_label: str) -> dict:
@@ -156,3 +156,18 @@ def test_unsafe_ticker_is_rejected_before_path_lookup(tmp_path):
 
     with pytest.raises(ValueError):
         build_historical_report_context(_config(tmp_path), "../NVDA", "2026-01-05")
+
+
+def test_graph_memory_step_populates_historical_report_context(tmp_path):
+    from tradingagents.graph.trading_graph import TradingAgentsGraph
+    from tradingagents.memory import TradingMemoryLog
+
+    _write_state(tmp_path, "NVDA", "2026-01-04")
+    graph = object.__new__(TradingAgentsGraph)
+    graph.config = _config(tmp_path, memory_log_path=str(tmp_path / "mem.md"))
+    graph.memory_log = TradingMemoryLog(graph.config)
+    graph.settle_all_pending = lambda wait=False: type("S", (), {"failed": []})()
+
+    out = graph._memory_step({"company_of_interest": "NVDA", "trade_date": "2026-01-05"})
+
+    assert "Prior analysis: 2026-01-04" in out["historical_report_context"]

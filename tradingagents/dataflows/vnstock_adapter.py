@@ -13,13 +13,22 @@ from typing import Annotated, Any
 
 import pandas as pd
 
-from .stockstats_utils import _clean_dataframe, filter_financials_by_date
-from .symbol_utils import NoMarketDataError
-from .vietnam_symbols import is_vietnam_index, to_vnstock_symbol
+from tradingagents.dataflows.errors import NoMarketDataError
+from tradingagents.dataflows.vendors.yahoo.ohlcv import _clean_dataframe
+from tradingagents.dataflows.vietnam_symbols import is_vietnam_index, to_vnstock_symbol
 
 logger = logging.getLogger(__name__)
 
 VNSTOCK_API_KEY_PATH = Path.home() / ".vnstock" / "api_key.json"
+
+
+def filter_financials_by_date(data: pd.DataFrame, as_of_date: str | None) -> pd.DataFrame:
+    """Drop financial statement columns (fiscal period timestamps) after as_of_date."""
+    if not as_of_date or data.empty:
+        return data
+    cutoff = pd.Timestamp(as_of_date)
+    mask = pd.to_datetime(data.columns, errors="coerce") <= cutoff
+    return data.loc[:, mask]
 
 
 def _vnstock_register_user(*, api_key: str) -> None:
@@ -95,6 +104,17 @@ def get_price_history_frame(symbol: str, start_date: str, end_date: str) -> pd.D
     return _normalize_ohlcv(_history_frame(symbol, start_date, end_date))
 
 
+def get_closes(symbol: str, start_date: str, end_date: str) -> pd.Series:
+    """Daily closes from ``start_date`` up to, not including, ``end_date``."""
+    frame = get_price_history_frame(symbol, start_date, end_date)
+    if frame.empty or "Close" not in frame.columns or "Date" not in frame.columns:
+        return pd.Series(dtype=float)
+    dates = pd.to_datetime(frame["Date"], errors="coerce")
+    series = pd.Series(frame["Close"].to_numpy(dtype=float), index=dates, name="Close")
+    series = series[series.index.notna()]
+    return series[(series.index >= pd.Timestamp(start_date)) & (series.index < pd.Timestamp(end_date))]
+
+
 def _normalize_ohlcv(data: pd.DataFrame) -> pd.DataFrame:
     if data is None or data.empty:
         return pd.DataFrame()
@@ -146,11 +166,11 @@ def _format_statement(
     statement_title: str,
     data: pd.DataFrame,
     freq: str,
-    curr_date: str | None,
+    as_of_date: str | None,
 ) -> str:
     if data is None or data.empty:
         raise NoMarketDataError(ticker, to_vnstock_symbol(ticker), f"no {statement_title} data")
-    filtered = filter_financials_by_date(data, curr_date)
+    filtered = filter_financials_by_date(data, as_of_date)
     if filtered.empty:
         filtered = data
     header = f"# {statement_title} data for {ticker.upper()} (VNstock: {to_vnstock_symbol(ticker)}, {freq})\n"
@@ -186,7 +206,7 @@ def get_vnstock_data_online(
 def get_stock_stats_indicators_window(
     symbol: Annotated[str, "ticker symbol of the company"],
     indicator: Annotated[str, "technical indicator to get the analysis and report of"],
-    curr_date: Annotated[
+    as_of_date: Annotated[
         str, "The current trading date you are trading on, YYYY-mm-dd"
     ],
     look_back_days: Annotated[int, "how many days to look back"],
@@ -194,10 +214,10 @@ def get_stock_stats_indicators_window(
     from dateutil.relativedelta import relativedelta
     from stockstats import wrap
 
-    curr_date_dt = datetime.strptime(curr_date, "%Y-%m-%d")
-    before = curr_date_dt - relativedelta(days=max(look_back_days, 30) + 260)
+    as_of_dt = datetime.strptime(as_of_date, "%Y-%m-%d")
+    before = as_of_dt - relativedelta(days=max(look_back_days, 30) + 260)
     data = _normalize_ohlcv(
-        _history_frame(symbol, before.strftime("%Y-%m-%d"), curr_date)
+        _history_frame(symbol, before.strftime("%Y-%m-%d"), as_of_date)
     )
     if data.empty:
         raise NoMarketDataError(symbol, to_vnstock_symbol(symbol), "no OHLCV rows for indicators")
@@ -206,9 +226,9 @@ def get_stock_stats_indicators_window(
     df["Date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
     df[indicator]
 
-    start = curr_date_dt - relativedelta(days=look_back_days)
+    start = as_of_dt - relativedelta(days=look_back_days)
     values = []
-    current = curr_date_dt
+    current = as_of_dt
     while current >= start:
         date_str = current.strftime("%Y-%m-%d")
         match = df[df["Date"] == date_str]
@@ -221,14 +241,14 @@ def get_stock_stats_indicators_window(
         current = current - relativedelta(days=1)
 
     return (
-        f"## {indicator} values from {start.strftime('%Y-%m-%d')} to {curr_date} "
+        f"## {indicator} values from {start.strftime('%Y-%m-%d')} to {as_of_date} "
         f"for {symbol.upper()} (VNstock):\n\n" + "\n".join(values)
     )
 
 
 def get_fundamentals(
     ticker: Annotated[str, "ticker symbol of the company"],
-    curr_date: Annotated[str, "analysis date in YYYY-MM-DD format"] = None
+    as_of_date: Annotated[str, "analysis date in YYYY-MM-DD format"] = None
 ):
     if is_vietnam_index(ticker):
         return _index_no_statement(ticker)
@@ -273,34 +293,34 @@ def get_fundamentals(
 def get_balance_sheet(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
-    curr_date: Annotated[str, "current date in YYYY-MM-DD format"] = None
+    as_of_date: Annotated[str, "current date in YYYY-MM-DD format"] = None
 ):
     if is_vietnam_index(ticker):
         return _index_no_statement(ticker)
     data = _statement_frame(ticker, "balance_sheet", freq)
-    return _format_statement(ticker, "Balance Sheet", data, freq, curr_date)
+    return _format_statement(ticker, "Balance Sheet", data, freq, as_of_date)
 
 
 def get_cashflow(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
-    curr_date: Annotated[str, "current date in YYYY-MM-DD format"] = None
+    as_of_date: Annotated[str, "current date in YYYY-MM-DD format"] = None
 ):
     if is_vietnam_index(ticker):
         return _index_no_statement(ticker)
     data = _statement_frame(ticker, "cash_flow", freq)
-    return _format_statement(ticker, "Cash Flow", data, freq, curr_date)
+    return _format_statement(ticker, "Cash Flow", data, freq, as_of_date)
 
 
 def get_income_statement(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
-    curr_date: Annotated[str, "current date in YYYY-MM-DD format"] = None
+    as_of_date: Annotated[str, "current date in YYYY-MM-DD format"] = None
 ):
     if is_vietnam_index(ticker):
         return _index_no_statement(ticker)
     data = _statement_frame(ticker, "income_statement", freq)
-    return _format_statement(ticker, "Income Statement", data, freq, curr_date)
+    return _format_statement(ticker, "Income Statement", data, freq, as_of_date)
 
 
 def get_company_news(ticker: str, start_date: str, end_date: str) -> str:
